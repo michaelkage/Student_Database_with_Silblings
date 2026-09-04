@@ -9,14 +9,7 @@ public partial class AddSubjectWindow : Window
     {
         InitializeComponent();
         SubjectIDTextBox.IsReadOnly = true;
-        SubjectIDTextBox.Text = GetNextSubjectId().ToString();
-    }
-
-    private static int GetNextSubjectId()
-    {
-        return MainWindow.subjects.Length == 0
-            ? 1
-            : MainWindow.subjects.Max(s => s.SubjectID) + 1;
+        SubjectIDTextBox.Text = MainWindow.GetNextSubjectID().ToString();
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -28,7 +21,7 @@ public partial class AddSubjectWindow : Window
             return;
         }
 
-        int newId = GetNextSubjectId();
+        int newId = MainWindow.GetNextSubjectID();
 
         MainWindow.subjects = MainWindow.subjects
             .Append(new Subject(newId, name))
