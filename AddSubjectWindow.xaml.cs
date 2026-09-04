@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Windows;
 
@@ -9,22 +8,19 @@ public partial class AddSubjectWindow : Window
     public AddSubjectWindow()
     {
         InitializeComponent();
+        SubjectIDTextBox.IsReadOnly = true;
+        SubjectIDTextBox.Text = GetNextSubjectId().ToString();
+    }
+
+    private static int GetNextSubjectId()
+    {
+        return MainWindow.subjects.Length == 0
+            ? 1
+            : MainWindow.subjects.Max(s => s.SubjectID) + 1;
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(SubjectIDTextBox.Text.Trim(), out int newId))
-        {
-            MessageBox.Show("Invalid Subject ID.");
-            return;
-        }
-
-        if (MainWindow.subjects.Any(s => s.SubjectID == newId))
-        {
-            MessageBox.Show("Error: Subject ID already exists.");
-            return;
-        }
-
         string name = SubjectNameTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -32,12 +28,14 @@ public partial class AddSubjectWindow : Window
             return;
         }
 
+        int newId = GetNextSubjectId();
+
         MainWindow.subjects = MainWindow.subjects
             .Append(new Subject(newId, name))
             .ToArray();
 
         MainWindow.SaveMemory();
-        MessageBox.Show("Subject added!");
+        MessageBox.Show($"Subject added! Subject ID: {newId}");
         Close();
     }
 }
