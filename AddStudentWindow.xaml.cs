@@ -9,14 +9,7 @@ public partial class AddStudentWindow : Window
     {
         InitializeComponent();
         StudentIDTextBox.IsReadOnly = true;
-        StudentIDTextBox.Text = GetNextStudentId().ToString();
-    }
-
-    private static int GetNextStudentId()
-    {
-        return MainWindow.students.Length == 0
-            ? 1
-            : MainWindow.students.Max(s => s.StudentID) + 1;
+        StudentIDTextBox.Text = MainWindow.GetNextStudentID().ToString();
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -30,7 +23,13 @@ public partial class AddStudentWindow : Window
             return;
         }
 
-        int newId = GetNextStudentId();
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            MessageBox.Show("Please enter a password.");
+            return;
+        }
+
+        int newId = MainWindow.GetNextStudentID();
 
         MainWindow.students = MainWindow.students
             .Append(new Student(newId, name, password))
