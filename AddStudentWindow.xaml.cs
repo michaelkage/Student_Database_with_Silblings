@@ -8,22 +8,19 @@ public partial class AddStudentWindow : Window
     public AddStudentWindow()
     {
         InitializeComponent();
+        StudentIDTextBox.IsReadOnly = true;
+        StudentIDTextBox.Text = GetNextStudentId().ToString();
+    }
+
+    private static int GetNextStudentId()
+    {
+        return MainWindow.students.Length == 0
+            ? 1
+            : MainWindow.students.Max(s => s.StudentID) + 1;
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(StudentIDTextBox.Text.Trim(), out int newId))
-        {
-            MessageBox.Show("Invalid Student ID.");
-            return;
-        }
-
-        if (MainWindow.students.Any(s => s.StudentID == newId))
-        {
-            MessageBox.Show("Error: Student ID already exists.");
-            return;
-        }
-
         string name = NameTextBox.Text.Trim();
         string password = PasswordBox.Password;
 
@@ -33,12 +30,14 @@ public partial class AddStudentWindow : Window
             return;
         }
 
+        int newId = GetNextStudentId();
+
         MainWindow.students = MainWindow.students
             .Append(new Student(newId, name, password))
             .ToArray();
 
         MainWindow.SaveMemory();
-        MessageBox.Show("Student added!");
+        MessageBox.Show($"Student added! Student ID: {newId}");
         Close();
     }
 }
