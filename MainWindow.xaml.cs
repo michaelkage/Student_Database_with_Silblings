@@ -67,7 +67,6 @@ namespace StudentManagementApp
         public MainWindow(bool isAdmin)
         {
             InitializeComponent();
-            LoadMemory();
             isAdminSession = isAdmin;
             UnlockDashboard(isAdmin);
         }
@@ -102,6 +101,23 @@ namespace StudentManagementApp
             if (File.Exists(PasswordFile))
                 AdminPassword = File.ReadAllText(PasswordFile).Trim();
 
+            // Load subjects before students so stale offered-subject references can be removed safely.
+            if (File.Exists(SubjectFile))
+            {
+                var loadedSubjects = new List<Subject>();
+                foreach (var line in File.ReadAllLines(SubjectFile))
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 2 && int.TryParse(parts[0], out int id))
+                        loadedSubjects.Add(new Subject(id, parts[1]));
+                }
+                subjects = loadedSubjects.ToArray();
+            }
+            else
+            {
+                subjects = new Subject[0];
+            }
+
             if (File.Exists(StudentFile))
             {
                 var loadedStudents = new List<Student>();
@@ -113,23 +129,26 @@ namespace StudentManagementApp
                         string name = parts[1];
                         string password = parts[2];
                         var student = new Student(id, name, password);
-                        if (parts.Length > 3 && !string.IsNullOrWhiteSpace(parts[3]))
+
+                        if (parts.Length > 4)
                         {
-                            student.OfferedSubjectIDs = parts.Skip(4).Select(int.Parse).ToList();
+                            student.OfferedSubjectIDs = parts
+                                .Skip(4)
+                                .Select(value => int.TryParse(value, out int subjectId) ? (int?)subjectId : null)
+                                .Where(subjectId => subjectId.HasValue)
+                                .Select(subjectId => subjectId!.Value)
+                                .Where(subjectId => subjects.Any(subject => subject.SubjectID == subjectId))
+                                .ToList();
                         }
+
                         loadedStudents.Add(student);
                     }
                 }
                 students = loadedStudents.ToArray();
             }
-
-            if (File.Exists(SubjectFile))
+            else
             {
-                subjects = File.ReadAllLines(SubjectFile)
-                    .Select(line => line.Split(','))
-                    .Where(parts => parts.Length == 2 && int.TryParse(parts[0], out _))
-                    .Select(parts => new Subject(int.Parse(parts[0]), parts[1]))
-                    .ToArray();
+                students = new Student[0];
             }
 
             if (File.Exists(ScoresFile))
@@ -138,12 +157,25 @@ namespace StudentManagementApp
                 foreach (var line in File.ReadAllLines(ScoresFile))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length == 3 && int.TryParse(parts[0], out int sId) && int.TryParse(parts[1], out int subId) && int.TryParse(parts[2], out int grade))
+                    if (parts.Length == 3 &&
+                        int.TryParse(parts[0], out int sId) &&
+                        int.TryParse(parts[1], out int subId) &&
+                        int.TryParse(parts[2], out int grade))
                     {
                         loadedScores.Add(new Score(sId, subId, grade));
                     }
                 }
-                scores = loadedScores.ToArray();
+
+                // Keep one score per StudentID + SubjectID. The first record is retained,
+                // matching the existing FirstOrDefault() behavior used throughout the app.
+                scores = loadedScores
+                    .GroupBy(score => new { score.StudentID, score.SubjectID })
+                    .Select(group => group.First())
+                    .ToArray();
+            }
+            else
+            {
+                scores = new Score[0];
             }
         }
 
@@ -151,9 +183,10 @@ namespace StudentManagementApp
         {
             var studentLines = students.Select(s =>
             {
-                string subjectsString = s.OfferedSubjectIDs != null && s.OfferedSubjectIDs.Count > 0
-                    ? string.Join(",", s.OfferedSubjectIDs) : "";
-                return $"{s.StudentID},{s.Name},{s.StudentPassword},{s.OfferedSubjectIDs.Count},{subjectsString}".TrimEnd(',');
+                var offeredSubjectIDs = s.OfferedSubjectIDs ?? new List<int>();
+                string subjectsString = offeredSubjectIDs.Count > 0
+                    ? string.Join(",", offeredSubjectIDs) : "";
+                return $"{s.StudentID},{s.Name},{s.StudentPassword},{offeredSubjectIDs.Count},{subjectsString}".TrimEnd(',');
             });
 
             File.WriteAllLines(StudentFile, studentLines);
@@ -166,7 +199,7 @@ namespace StudentManagementApp
             var validScores = scores.Where(score =>
                 score.Grade.HasValue &&
                 students.Any(student => student.StudentID == score.StudentID &&
-                                        student.OfferedSubjectIDs.Contains(score.SubjectID)) &&
+                                        (student.OfferedSubjectIDs ?? new List<int>()).Contains(score.SubjectID)) &&
                 subjects.Any(subject => subject.SubjectID == score.SubjectID));
 
             File.WriteAllLines(ScoresFile,
@@ -207,21 +240,18 @@ namespace StudentManagementApp
         {
             var window = new StudentManagementWindow { Owner = this };
             window.ShowDialog();
-            LoadMemory();
         }
 
         private void MenuAddNewSubject_Click(object sender, RoutedEventArgs e)
         {
             var window = new AddSubjectWindow { Owner = this };
             window.ShowDialog();
-            LoadMemory();
         }
 
         private void MenuChangeAdminPassword_Click(object sender, RoutedEventArgs e)
         {
             var window = new ChangeAdminPasswordWindow { Owner = this };
             window.ShowDialog();
-            LoadMemory();
         }
 
         private void MenuViewMyGrades_Click(object sender, RoutedEventArgs e)
@@ -236,7 +266,6 @@ namespace StudentManagementApp
             if (CurrentLoggedInStudent == null) return;
             var window = new AssignSubjectsWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
-            LoadMemory();
             RefreshCurrentStudentReference();
         }
 
@@ -245,7 +274,6 @@ namespace StudentManagementApp
             if (CurrentLoggedInStudent == null) return;
             var window = new StudentPasswordWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
-            LoadMemory();
             RefreshCurrentStudentReference();
         }
 
@@ -255,7 +283,6 @@ namespace StudentManagementApp
             int studentId = CurrentLoggedInStudent.StudentID;
             var window = new EditStudentDetailsWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
-            LoadMemory();
             CurrentLoggedInStudent = students.FirstOrDefault(s => s.StudentID == studentId);
             TxtWelcomeHeadline.Text = CurrentLoggedInStudent == null
                 ? "Welcome"
