@@ -10,7 +10,6 @@ C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatab
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\EditResultWindow.baml
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\MainWindow.baml
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewStudentsWindow.baml
-C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewSubjectsWindow.baml
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\AddStudentWindow.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\AddSubjectWindow.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\AssignSubjectsWindow.g.cs
@@ -18,7 +17,6 @@ C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatab
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\LoginWindow.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\MainWindow.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewStudentsWindow.g.cs
-C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewSubjectsWindow.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\App.g.cs
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentManagementApp_MarkupCompile.cache
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentManagementApp_MarkupCompile.lref
@@ -35,3 +33,15 @@ C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatab
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentManagementApp.genruntimeconfig.cache
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ref\StudentManagementApp.dll
 C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentM.507EE403.Up2Date
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ChangeAdminPasswordWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\EditStudentDetailsWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentManagementWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentPasswordWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\SubjectChoiceWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewGradesWindow.baml
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ChangeAdminPasswordWindow.g.cs
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\EditStudentDetailsWindow.g.cs
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentManagementWindow.g.cs
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\StudentPasswordWindow.g.cs
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\SubjectChoiceWindow.g.cs
+C:\Local Desktop\Michael\ㅤㅤㅤㅤCoding & Development\RecordsDB\studentDatabase\Student_Database_with_Silblings\obj\Debug\net11.0-windows\ViewGradesWindow.g.cs

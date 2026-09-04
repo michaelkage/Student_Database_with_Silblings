@@ -1,3 +1,3 @@
-1,Gabriel,Ayeni,1,0
-2,Deji,Ayeni,1,0
+1,Gabriel,Ayeni,9,1,6,7,9,10,11,12,13,23
+2,Deji,Ayeni,0
 3,Michael,Kage1!,0

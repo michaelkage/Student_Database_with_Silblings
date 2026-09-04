@@ -1,1 +1,19 @@
 1,Mathematics
+6,FurtherMathematics
+7,Civic Education
+8,Economics
+9,Physics
+10,Physical Education
+11,Chemistry
+12,Technical Drawing
+13,English
+14,Christian Religious Studies
+15,Islamic Religious Studies
+16,Arabic Language
+17,French Language
+18,Yoruba Language
+19,Basic Electricity
+20,Food and Nutrition
+21,Applied Electricity
+22,Brick Block and Concrete
+23,Digital Technologies
