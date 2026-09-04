@@ -12,8 +12,8 @@ public partial class ViewStudentsWindow : Window
         public string Name { get; set; } = "";
         public int SubjectID { get; set; }
         public string SubjectName { get; set; } = "";
-        public int Score { get; set; }
-        public string LetterGrade { get; set; } = "";
+        public string Score { get; set; } = "—";
+        public string LetterGrade { get; set; } = "—";
     }
 
     public ViewStudentsWindow()
@@ -44,7 +44,6 @@ public partial class ViewStudentsWindow : Window
             {
                 var match = MainWindow.scores.FirstOrDefault(s =>
                     s.StudentID == student.StudentID && s.SubjectID == subject.SubjectID);
-                int grade = match != null ? match.Grade : 0;
 
                 rows.Add(new ResultRow
                 {
@@ -52,8 +51,10 @@ public partial class ViewStudentsWindow : Window
                     Name = student.Name,
                     SubjectID = subject.SubjectID,
                     SubjectName = subject.SubjectName,
-                    Score = grade,
-                    LetterGrade = MainWindow.GetLetterGrade(grade)
+                    Score = match?.Grade?.ToString() ?? "—",
+                    LetterGrade = match?.Grade.HasValue == true
+                        ? MainWindow.GetLetterGrade(match.Grade.Value)
+                        : "—"
                 });
             }
         }
