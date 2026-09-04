@@ -1,43 +1,32 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
 using System.Windows;
+using System.Linq;
 
-namespace StudentManagementApp;
-
-public partial class ViewStudentsWindow : Window
+namespace StudentManagementApp
 {
-    private static readonly string AppDataFolder =
-        Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
-            "StudentManagementApp");
-
-    private static readonly string StudentFile =
-        Path.Combine(AppDataFolder, "students.json");
-
-    public ViewStudentsWindow()
+    public partial class ViewStudentsWindow : Window
     {
-        InitializeComponent();
-
-        LoadStudents();
-    }
-
-    private void LoadStudents()
-    {
-        if (!File.Exists(StudentFile))
+        public ViewStudentsWindow()
         {
-            StudentsDataGrid.ItemsSource = new List<Student>();
-            return;
+            InitializeComponent();
+            LoadGridData();
         }
 
-        string json = File.ReadAllText(StudentFile);
+        private void LoadGridData()
+        {
+            if (MainWindow.students != null && MainWindow.students.Length > 0)
+            {
+                dgStudents.ItemsSource = MainWindow.students.ToList();
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("No active student records discovered in local database arrays.", "Database Registry Status");
+            }
+        }
 
-        List<Student> students =
-            JsonSerializer.Deserialize<List<Student>>(json)
-            ?? new List<Student>();
-
-        StudentsDataGrid.ItemsSource = students;
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
     }
 }

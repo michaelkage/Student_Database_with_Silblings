@@ -13,9 +13,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp_xnxczivx_wpftmp.csproj",
+      "projectUniqueName": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj",
       "projectName": "StudentManagementApp",
-      "projectPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp_xnxczivx_wpftmp.csproj",
+      "projectPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj",
       "packagesPath": "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\",
       "outputPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\obj\\",
       "projectStyle": "PackageReference",

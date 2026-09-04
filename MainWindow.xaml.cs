@@ -6,44 +6,85 @@ using System.Collections.Generic;
 
 namespace StudentManagementApp
 {
-    // Made public so sibling windows can see it
-    public class Result
+    // ==========================================
+    // CORE PERSISTENT DATA MODELS (ORIGINAL SPEC)
+    // ==========================================
+
+    public class Score
     {
         public int StudentID { get; set; }
         public int SubjectID { get; set; }
-        public int Score { get; set; }
+        public int Grade { get; set; } // Your Dad's original property
 
-        public Result(int studentId, int subjectId, int score)
+        public Score(int studentId, int subjectId, int grade)
         {
             StudentID = studentId;
             SubjectID = subjectId;
-            Score = score;
+            Grade = grade;
         }
     }
 
-    // Made public so sibling windows can see it
+    // THE COMPATIBILITY BRIDGE: Maps sibling window property calls directly back to your Dad's Grade
+    public class Result : Score
+    {
+        public int Score
+        {
+            get => Grade;
+            set => Grade = value;
+        }
+
+        public Result(int studentId, int subjectId, int grade) : base(studentId, subjectId, grade)
+        {
+        }
+    }
+
     public class Student
     {
         public int StudentID { get; set; }
         public string StudentPassword { get; set; }
-        public string FirstName { get; set; }
-        public string Surname { get; set; }
+        public string Name { get; set; } // Your Dad's original property
         public List<int> OfferedSubjectIDs { get; set; } = new List<int>();
 
+        // SIBLING COMPATIBILITY MIRRORS: Automatically maps FirstName and Surname to Name split patterns
+        public string FirstName
+        {
+            get => string.IsNullOrWhiteSpace(Name) ? "" : Name.Split(' ')[0];
+            set => Name = $"{value} {Surname}".Trim();
+        }
+
+        public string Surname
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Name)) return "";
+                var parts = Name.Split(' ');
+                return parts.Length > 1 ? string.Join(" ", parts.Skip(1)) : "";
+            }
+            set => Name = $"{FirstName} {value}".Trim();
+        }
+
+        // Base matching constructor
+        public Student(int id, string name, string password)
+        {
+            StudentID = id;
+            Name = name;
+            StudentPassword = password;
+        }
+
+        // Sibling constructor override (Fixes AddStudentWindow error)
         public Student(int id, string firstName, string surname, string password)
         {
             StudentID = id;
-            FirstName = firstName;
-            Surname = surname;
+            Name = $"{firstName} {surname}".Trim();
             StudentPassword = password;
         }
     }
 
-    // Made public so sibling windows can see it
     public class Subject
     {
         public int SubjectID { get; set; }
         public string SubjectName { get; set; }
+
         public Subject(int id, string name)
         {
             SubjectID = id;
@@ -51,31 +92,35 @@ namespace StudentManagementApp
         }
     }
 
+    // ==========================================
+    // MAIN APPLICATION WINDOW INTERACTION ENGINE
+    // ==========================================
+
     public partial class MainWindow : Window
     {
-        // Keeping central backend arrays active 
+        // Central database memory arrays preserved intact
         public static Student[] students = new Student[0];
         public static Subject[] subjects = new Subject[0];
-        public static Result[] scores = new Result[0]; // Renamed Score to Result array match
+        public static Score[] scores = new Score[0];
 
         private const string StudentFile = "Student.txt";
         private const string SubjectFile = "Subject.txt";
         private const string ScoresFile = "Scores.txt";
         private const string PasswordFile = "AdminPassword.txt";
-        public static string AdminPassword { get; set; } = "Messi";
 
+        public static string AdminPassword { get; set; } = "Messi";
         public static Student CurrentLoggedInStudent { get; set; }
         public bool isAdminSession = false;
 
-        // 3. FIXED CONSTRUCTOR SIGNATURE TO MATCH LOGINWINDOW EXPECTATIONS
         public MainWindow(bool isAdmin)
         {
             InitializeComponent();
-            LoadMemory();
+            LoadMemory(); // Instantly map local file records into memory on window construction
             this.isAdminSession = isAdmin;
             UnlockDashboard(isAdmin);
         }
 
+        // --- GATEWAY PORTAL LOGIN HANDLER ---
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             string usernameInput = TxtUsername.Text.Trim();
@@ -135,12 +180,13 @@ namespace StudentManagementApp
                 MenuStudentOptions.Visibility = Visibility.Visible;
                 if (CurrentLoggedInStudent != null)
                 {
-                    TxtWelcomeHeadline.Text = $"Welcome Back, {CurrentLoggedInStudent.FirstName} {CurrentLoggedInStudent.Surname} [ID: {CurrentLoggedInStudent.StudentID}]";
+                    TxtWelcomeHeadline.Text = $"Welcome Back, {CurrentLoggedInStudent.Name} [ID: {CurrentLoggedInStudent.StudentID}]";
                 }
             }
         }
 
-        private void LoadMemory()
+        // --- ORIGINAL PRESERVED LOCAL STORAGE UTILITY OPERATIONS ---
+        public void LoadMemory()
         {
             if (File.Exists(PasswordFile))
                 AdminPassword = File.ReadAllText(PasswordFile).Trim();
@@ -151,18 +197,14 @@ namespace StudentManagementApp
                 foreach (var line in File.ReadAllLines(StudentFile))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length >= 4 && int.TryParse(parts[0], out int id))
+                    if (parts.Length >= 3 && int.TryParse(parts[0], out int id))
                     {
-                        string fName = parts[1];
-                        string sName = parts[2];
-                        string password = parts[3];
-                        var student = new Student(id, fName, sName, password);
-                        if (parts.Length > 4 && !string.IsNullOrWhiteSpace(parts[4]))
+                        string name = parts[1];
+                        string password = parts[2];
+                        var student = new Student(id, name, password);
+                        if (parts.Length > 3 && !string.IsNullOrWhiteSpace(parts[3]))
                         {
-                            student.OfferedSubjectIDs = parts
-                                .Skip(5)
-                                .Select(int.Parse)
-                                .ToList();
+                            student.OfferedSubjectIDs = parts.Skip(4).Select(int.Parse).ToList();
                         }
                         loadedStudents.Add(student);
                     }
@@ -180,33 +222,34 @@ namespace StudentManagementApp
 
             if (File.Exists(ScoresFile))
             {
-                var loadedScores = new List<Result>();
+                var loadedScores = new List<Score>();
                 foreach (var line in File.ReadAllLines(ScoresFile))
                 {
                     var parts = line.Split(',');
-                    if (parts.Length == 3 && int.TryParse(parts[0], out int sId) && int.TryParse(parts[1], out int subId) && int.TryParse(parts[2], out int scoreVal))
+                    if (parts.Length == 3 && int.TryParse(parts[0], out int sId) && int.TryParse(parts[1], out int subId) && int.TryParse(parts[2], out int grade))
                     {
-                        loadedScores.Add(new Result(sId, subId, scoreVal));
+                        loadedScores.Add(new Result(sId, subId, grade)); // Re-mapped to result subclass mirror
                     }
                 }
                 scores = loadedScores.ToArray();
             }
         }
 
-        private void SaveMemory()
+        public void SaveMemory()
         {
             var studentLines = students.Select(s =>
             {
                 string subjectsString = s.OfferedSubjectIDs != null && s.OfferedSubjectIDs.Count > 0
                     ? string.Join(",", s.OfferedSubjectIDs) : "";
-                return $"{s.StudentID},{s.FirstName},{s.Surname},{s.StudentPassword},{s.OfferedSubjectIDs.Count},{subjectsString}".TrimEnd(',');
+                return $"{s.StudentID},{s.Name},{s.StudentPassword},{s.OfferedSubjectIDs.Count},{subjectsString}".TrimEnd(',');
             });
             File.WriteAllLines(StudentFile, studentLines);
             File.WriteAllLines(SubjectFile, subjects.Select(s => $"{s.SubjectID},{s.SubjectName}"));
-            File.WriteAllLines(ScoresFile, scores.Select(s => $"{s.StudentID},{s.SubjectID},{s.Score}"));
+            File.WriteAllLines(ScoresFile, scores.Select(s => $"{s.StudentID},{s.SubjectID},{s.Grade}"));
             File.WriteAllText(PasswordFile, AdminPassword);
         }
 
+        // --- DROPDOWN ACTION TRIGGERS ---
         private void MenuLogout_Click(object sender, RoutedEventArgs e)
         {
             AppMenuBar.Visibility = Visibility.Collapsed;
@@ -222,60 +265,11 @@ namespace StudentManagementApp
             Application.Current.Shutdown();
         }
 
-        private void MenuAddNewStudent_Click(object sender, RoutedEventArgs e)
-        {
-            int autoGeneratedId = students.Length > 0 ? students.Max(s => s.StudentID) + 1 : 1;
-
-            string fName = Microsoft.VisualBasic.Interaction.InputBox("Enter Student First Name:", "Add Student Control", "");
-            string sName = Microsoft.VisualBasic.Interaction.InputBox("Enter Student Surname:", "Add Student Control", "");
-            string pass = Microsoft.VisualBasic.Interaction.InputBox("Enter Student Password:", "Add Student Control", "1234");
-
-            if (!string.IsNullOrWhiteSpace(fName) && !string.IsNullOrWhiteSpace(sName))
-            {
-                // 1. Add to the data array
-                students = students.Append(new Student(autoGeneratedId, fName, sName, pass)).ToArray();
-                SaveMemory();
-
-                // 2. Force the UI Windows to reload the fresh data array
-                MessageBox.Show($"Student successfully created with Auto-ID: {autoGeneratedId}", "Success");
-            }
-        }
-
-        private void MenuAddNewSubject_Click(object sender, RoutedEventArgs e)
-        {
-            int autoGeneratedSubId = subjects.Length > 0 ? subjects.Max(s => s.SubjectID) + 1 : 1;
-
-            string name = Microsoft.VisualBasic.Interaction.InputBox("Enter New Subject Name:", "Add Subject Control", "");
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                subjects = subjects.Append(new Subject(autoGeneratedSubId, name)).ToArray();
-                SaveMemory();
-                MessageBox.Show($"Subject successfully created with Auto-ID: {autoGeneratedSubId}", "Success");
-            }
-        }
-
-        private void MenuViewAllResults_Click(object sender, RoutedEventArgs e)
-        {
-            ViewStudentsWindow viewStudentsWin = new ViewStudentsWindow();
-            viewStudentsWin.Owner = this;
-            viewStudentsWin.ShowDialog();
-        }
-
-        private void MenuModifyStudent_Click(object sender, RoutedEventArgs e)
-        {
-            EditResultWindow editWin = new EditResultWindow();
-            editWin.Owner = this;
-            editWin.ShowDialog();
-        }
-
-        private void MenuViewMyGrades_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Grades statement module loading next!");
-        }
-
-        private void MenuEditMyDetails_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Self detail edit utility module loading next!");
-        }
+        private void MenuAddNewStudent_Click(object sender, RoutedEventArgs e) { int autoGeneratedId = students.Length > 0 ? students.Max(s => s.StudentID) + 1 : 1; string name = Microsoft.VisualBasic.Interaction.InputBox("Enter Student Full Name:", "Add Student Registry", ""); string pass = Microsoft.VisualBasic.Interaction.InputBox("Enter Student Password:", "Add Student Registry", "1234"); if (!string.IsNullOrWhiteSpace(name)) { students = students.Append(new Student(autoGeneratedId, name, pass)).ToArray(); SaveMemory(); MessageBox.Show($"Student successfully created with Auto-ID: {autoGeneratedId}", "Registry Action Completed"); } }
+        private void MenuAddNewSubject_Click(object sender, RoutedEventArgs e) { int autoGeneratedSubId = subjects.Length > 0 ? subjects.Max(s => s.SubjectID) + 1 : 1; string name = Microsoft.VisualBasic.Interaction.InputBox("Enter New Subject Name:", "Add Subject Registry", ""); if (!string.IsNullOrWhiteSpace(name)) { subjects = subjects.Append(new Subject(autoGeneratedSubId, name)).ToArray(); SaveMemory(); MessageBox.Show($"Subject successfully created with Auto-ID: {autoGeneratedSubId}", "Registry Action Completed"); } }
+        private void MenuViewAllResults_Click(object sender, RoutedEventArgs e) { ViewStudentsWindow viewStudentsWin = new ViewStudentsWindow(); viewStudentsWin.Owner = this; viewStudentsWin.ShowDialog(); }
+        private void MenuModifyStudent_Click(object sender, RoutedEventArgs e) { EditResultWindow editWin = new EditResultWindow(); editWin.Owner = this; editWin.ShowDialog(); }
+        private void MenuViewMyGrades_Click(object sender, RoutedEventArgs e) { MessageBox.Show("Grades sheet visual layout loading next!", "Student Record Profile"); }
+        private void MenuEditMyDetails_Click(object sender, RoutedEventArgs e) { MessageBox.Show("Self detail edit utility module loading next!", "Student Record Profile"); }
     }
 }
