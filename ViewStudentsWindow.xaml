@@ -1,49 +1,21 @@
 <Window x:Class="StudentManagementApp.ViewStudentsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Registered Student Records"
-        Height="450"
-        Width="650"
-        WindowStartupLocation="CenterOwner"
-        Background="#F8F9FA">
-
+        Title="All Student Results" Height="520" Width="800"
+        WindowStartupLocation="CenterOwner">
     <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <TextBlock Text="System Student Registry"
-                   FontSize="18"
-                   FontWeight="Bold"
-                   Margin="0,0,0,10"
-                   Foreground="#333333"/>
-
-        <!-- TABLE COLUMNS MAPPED TO SCRIPT PROPERTY VARIABLES -->
-        <DataGrid x:Name="dgStudents"
-                  Grid.Row="1"
-                  AutoGenerateColumns="False"
-                  CanUserAddRows="False"
-                  IsReadOnly="True"
-                  Background="White"
-                  RowHeight="28">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <TextBlock Text="All Student Results" FontSize="24" FontWeight="Bold" Margin="0,0,0,15"/>
+        <DataGrid x:Name="ResultsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Student ID"
-                                    Binding="{Binding StudentID}"
-                                    Width="120"/>
-                <DataGridTextColumn Header="Full Name"
-                                    Binding="{Binding Name}"
-                                    Width="*"/>
+                <DataGridTextColumn Header="Student ID" Binding="{Binding StudentID}" Width="90"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180"/>
+                <DataGridTextColumn Header="Subject ID" Binding="{Binding SubjectID}" Width="90"/>
+                <DataGridTextColumn Header="Subject" Binding="{Binding SubjectName}" Width="*"/>
+                <DataGridTextColumn Header="Score" Binding="{Binding Score}" Width="80"/>
+                <DataGridTextColumn Header="Grade" Binding="{Binding LetterGrade}" Width="80"/>
             </DataGrid.Columns>
         </DataGrid>
-
-        <Button Content="Close Registry Panel"
-                Grid.Row="2"
-                Height="32"
-                Width="150"
-                HorizontalAlignment="Right"
-                Margin="0,15,0,0"
-                Click="BtnClose_Click"/>
+        <Button Content="Close" Grid.Row="2" Width="100" HorizontalAlignment="Right" Margin="0,15,0,0" Click="BtnClose_Click"/>
     </Grid>
 </Window>
