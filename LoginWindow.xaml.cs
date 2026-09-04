@@ -1,5 +1,5 @@
-using System.Windows;
 using System.Linq;
+using System.Windows;
 
 namespace StudentManagementApp
 {
@@ -8,6 +8,7 @@ namespace StudentManagementApp
         public LoginWindow()
         {
             InitializeComponent();
+            MainWindow.LoadMemory();
         }
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -19,36 +20,36 @@ namespace StudentManagementApp
             {
                 if (password == MainWindow.AdminPassword)
                 {
-                    MainWindow main = new MainWindow(true);
+                    MainWindow.CurrentLoggedInStudent = null;
+                    var main = new MainWindow(true);
                     main.Show();
-                    this.Close();
+                    Close();
                 }
                 else
                 {
-                    MessageBox.Show("Wrong Admin Password!", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Wrong!!!!", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+
+                return;
+            }
+
+            if (!int.TryParse(username, out int studentId))
+            {
+                MessageBox.Show("Invalid ID format.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var student = MainWindow.students.FirstOrDefault(s => s.StudentID == studentId);
+            if (student != null && student.StudentPassword == password)
+            {
+                MainWindow.CurrentLoggedInStudent = student;
+                var main = new MainWindow(false);
+                main.Show();
+                Close();
             }
             else
             {
-                if (int.TryParse(username, out int studentId))
-                {
-                    var student = MainWindow.students.FirstOrDefault(s => s.StudentID == studentId);
-                    if (student != null && student.StudentPassword == password)
-                    {
-                        MainWindow.CurrentLoggedInStudent = student;
-                        MainWindow main = new MainWindow(false);
-                        main.Show();
-                        this.Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid Student ID or password.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Please enter a numeric Student ID.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                MessageBox.Show("Invalid Student ID or password. Access denied.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
