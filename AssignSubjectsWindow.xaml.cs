@@ -16,7 +16,6 @@ public partial class AssignSubjectsWindow : Window
 
     private void Offer_Click(object sender, RoutedEventArgs e)
     {
-        MainWindow.LoadMemory();
         var available = MainWindow.subjects
             .Where(s => !student.OfferedSubjectIDs.Contains(s.SubjectID))
             .ToArray();
@@ -38,7 +37,6 @@ public partial class AssignSubjectsWindow : Window
 
     private void Drop_Click(object sender, RoutedEventArgs e)
     {
-        MainWindow.LoadMemory();
         if (student.OfferedSubjectIDs.Count == 0)
         {
             MessageBox.Show("This student isn't offering any subjects to drop.");
