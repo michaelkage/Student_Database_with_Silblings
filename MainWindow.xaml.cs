@@ -57,6 +57,8 @@ namespace StudentManagementApp
         private const string SubjectFile = "Subject.txt";
         private const string ScoresFile = "Scores.txt";
         private const string PasswordFile = "AdminPassword.txt";
+        private const string NextStudentIdFile = "NextStudentID.txt";
+        private const string NextSubjectIdFile = "NextSubjectID.txt";
 
         public static string AdminPassword { get; set; } = "Messi";
         public static Student CurrentLoggedInStudent { get; set; }
@@ -77,6 +79,22 @@ namespace StudentManagementApp
             if (numericGrade >= 60) return "C";
             if (numericGrade >= 50) return "P";
             return "F";
+        }
+
+        public static int GetNextStudentID()
+        {
+            int minimumNext = students.Length == 0 ? 1 : students.Max(s => s.StudentID) + 1;
+            if (File.Exists(NextStudentIdFile) && int.TryParse(File.ReadAllText(NextStudentIdFile).Trim(), out int storedNext))
+                return Math.Max(storedNext, minimumNext);
+            return minimumNext;
+        }
+
+        public static int GetNextSubjectID()
+        {
+            int minimumNext = subjects.Length == 0 ? 1 : subjects.Max(s => s.SubjectID) + 1;
+            if (File.Exists(NextSubjectIdFile) && int.TryParse(File.ReadAllText(NextSubjectIdFile).Trim(), out int storedNext))
+                return Math.Max(storedNext, minimumNext);
+            return minimumNext;
         }
 
         public static void LoadMemory()
@@ -143,11 +161,22 @@ namespace StudentManagementApp
 
             // A missing Scores.txt record represents an offered subject with no score yet.
             // A stored 0 remains a real, explicitly entered zero.
+            // Only save scores that point to an existing student, existing subject,
+            // and a subject actually offered by that student.
+            var validScores = scores.Where(score =>
+                score.Grade.HasValue &&
+                students.Any(student => student.StudentID == score.StudentID &&
+                                        student.OfferedSubjectIDs.Contains(score.SubjectID)) &&
+                subjects.Any(subject => subject.SubjectID == score.SubjectID));
+
             File.WriteAllLines(ScoresFile,
-                scores.Where(s => s.Grade.HasValue)
-                      .Select(s => $"{s.StudentID},{s.SubjectID},{s.Grade.Value}"));
+                validScores.Select(s => $"{s.StudentID},{s.SubjectID},{s.Grade!.Value}"));
 
             File.WriteAllText(PasswordFile, AdminPassword);
+
+            // Persist the next unused IDs so deleting the highest ID never causes it to be reused.
+            File.WriteAllText(NextStudentIdFile, GetNextStudentID().ToString());
+            File.WriteAllText(NextSubjectIdFile, GetNextSubjectID().ToString());
         }
 
         private void UnlockDashboard(bool isAdmin)
