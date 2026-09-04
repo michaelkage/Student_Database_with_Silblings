@@ -1,161 +1,68 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace StudentManagementApp;
 
 public partial class AssignSubjectsWindow : Window
 {
-    private static readonly string AppDataFolder =
-        Path.Combine(
-            Environment.GetFolderPath(
-                Environment.SpecialFolder.LocalApplicationData),
-            "StudentManagementApp");
+    private readonly Student student;
 
-    private static readonly string StudentFile =
-        Path.Combine(AppDataFolder, "students.json");
-
-    private static readonly string SubjectFile =
-        Path.Combine(AppDataFolder, "subjects.json");
-
-    private static readonly string ResultFile =
-        Path.Combine(AppDataFolder, "results.json");
-
-    private List<Student> students = new();
-    private List<Subject> subjects = new();
-    private List<Result> results = new();
-
-    public AssignSubjectsWindow()
+    public AssignSubjectsWindow(Student student)
     {
         InitializeComponent();
-
-        Directory.CreateDirectory(AppDataFolder);
-
-        LoadData();
-        PopulateStudents();
-        PopulateSubjects();
+        this.student = student;
+        TitleTextBlock.Text = $"Managing Subjects for {student.Name}";
     }
 
-    private void LoadData()
+    private void Offer_Click(object sender, RoutedEventArgs e)
     {
-        if (File.Exists(StudentFile))
+        MainWindow.LoadMemory();
+        var available = MainWindow.subjects
+            .Where(s => !student.OfferedSubjectIDs.Contains(s.SubjectID))
+            .ToArray();
+
+        if (available.Length == 0)
         {
-            string json = File.ReadAllText(StudentFile);
-
-            students =
-                JsonSerializer.Deserialize<List<Student>>(json)
-                ?? new List<Student>();
-        }
-
-        if (File.Exists(SubjectFile))
-        {
-            string json = File.ReadAllText(SubjectFile);
-
-            subjects =
-                JsonSerializer.Deserialize<List<Subject>>(json)
-                ?? new List<Subject>();
-        }
-
-        if (File.Exists(ResultFile))
-        {
-            string json = File.ReadAllText(ResultFile);
-
-            results =
-                JsonSerializer.Deserialize<List<Result>>(json)
-                ?? new List<Result>();
-        }
-    }
-
-    private void PopulateStudents()
-    {
-        StudentComboBox.ItemsSource = students;
-
-        StudentComboBox.DisplayMemberPath = "FullName";
-
-        if (students.Count > 0)
-        {
-            StudentComboBox.SelectedIndex = 0;
-        }
-    }
-
-    private void PopulateSubjects()
-    {
-        SubjectsPanel.Children.Clear();
-
-        foreach (Subject subject in subjects)
-        {
-            CheckBox checkBox = new CheckBox
-            {
-                Content = $"{subject.SubjectID} - {subject.SubjectName}",
-                Tag = subject.SubjectID,
-                Margin = new Thickness(5)
-            };
-
-            SubjectsPanel.Children.Add(checkBox);
-        }
-    }
-
-    private void SaveButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (StudentComboBox.SelectedItem is not Student selectedStudent)
-        {
-            MessageBox.Show("Please select a student.");
+            MessageBox.Show("No new subjects available to offer.");
             return;
         }
 
-        int addedCount = 0;
-
-        foreach (CheckBox checkBox in
-                 SubjectsPanel.Children.OfType<CheckBox>())
+        var window = new SubjectChoiceWindow("Available subjects to offer", available) { Owner = this };
+        if (window.ShowDialog() == true && window.SelectedSubject != null)
         {
-            if (checkBox.IsChecked != true)
-            {
-                continue;
-            }
+            student.OfferedSubjectIDs.Add(window.SelectedSubject.SubjectID);
+            MainWindow.SaveMemory();
+            MessageBox.Show("Subject added to offerings successfully!");
+        }
+    }
 
-            int subjectID = (int)checkBox.Tag;
-
-            bool alreadyAssigned = results.Any(r =>
-                r.StudentID == selectedStudent.StudentID &&
-                r.SubjectID == subjectID);
-
-            if (alreadyAssigned)
-            {
-                continue;
-            }
-
-            Result newResult = new Result(
-                selectedStudent.StudentID,
-                subjectID,
-                0);
-
-            results.Add(newResult);
-
-            addedCount++;
+    private void Drop_Click(object sender, RoutedEventArgs e)
+    {
+        MainWindow.LoadMemory();
+        if (student.OfferedSubjectIDs.Count == 0)
+        {
+            MessageBox.Show("This student isn't offering any subjects to drop.");
+            return;
         }
 
-        SaveResults();
+        var offered = student.OfferedSubjectIDs
+            .Select(id => MainWindow.subjects.FirstOrDefault(s => s.SubjectID == id))
+            .Where(s => s != null)
+            .Cast<Subject>()
+            .ToArray();
 
-        MessageBox.Show(
-            $"{addedCount} subject(s) assigned to " +
-            $"{selectedStudent.FirstName} {selectedStudent.Surname}.");
-
-        Close();
+        var window = new SubjectChoiceWindow("Currently offered subjects", offered) { Owner = this };
+        if (window.ShowDialog() == true && window.SelectedSubject != null)
+        {
+            int subjectId = window.SelectedSubject.SubjectID;
+            student.OfferedSubjectIDs.Remove(subjectId);
+            MainWindow.scores = MainWindow.scores
+                .Where(s => !(s.StudentID == student.StudentID && s.SubjectID == subjectId))
+                .ToArray();
+            MainWindow.SaveMemory();
+            MessageBox.Show("Subject dropped successfully!");
+        }
     }
 
-    private void SaveResults()
-    {
-        string json = JsonSerializer.Serialize(
-            results,
-            new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-
-        File.WriteAllText(ResultFile, json);
-    }
+    private void Back_Click(object sender, RoutedEventArgs e) => Close();
 }
