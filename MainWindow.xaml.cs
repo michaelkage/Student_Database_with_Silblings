@@ -10,9 +10,9 @@ namespace StudentManagementApp
     {
         public int StudentID { get; set; }
         public int SubjectID { get; set; }
-        public int Grade { get; set; }
+        public int? Grade { get; set; }
 
-        public Score(int studentId, int subjectId, int grade)
+        public Score(int studentId, int subjectId, int? grade)
         {
             StudentID = studentId;
             SubjectID = subjectId;
@@ -140,7 +140,13 @@ namespace StudentManagementApp
 
             File.WriteAllLines(StudentFile, studentLines);
             File.WriteAllLines(SubjectFile, subjects.Select(s => $"{s.SubjectID},{s.SubjectName}"));
-            File.WriteAllLines(ScoresFile, scores.Select(s => $"{s.StudentID},{s.SubjectID},{s.Grade}"));
+
+            // A missing Scores.txt record represents an offered subject with no score yet.
+            // A stored 0 remains a real, explicitly entered zero.
+            File.WriteAllLines(ScoresFile,
+                scores.Where(s => s.Grade.HasValue)
+                      .Select(s => $"{s.StudentID},{s.SubjectID},{s.Grade.Value}"));
+
             File.WriteAllText(PasswordFile, AdminPassword);
         }
 
@@ -202,6 +208,7 @@ namespace StudentManagementApp
             var window = new AssignSubjectsWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
             LoadMemory();
+            RefreshCurrentStudentReference();
         }
 
         private void MenuStudentPassword_Click(object sender, RoutedEventArgs e)
@@ -210,15 +217,27 @@ namespace StudentManagementApp
             var window = new StudentPasswordWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
             LoadMemory();
+            RefreshCurrentStudentReference();
         }
 
         private void MenuEditMyDetails_Click(object sender, RoutedEventArgs e)
         {
             if (CurrentLoggedInStudent == null) return;
+            int studentId = CurrentLoggedInStudent.StudentID;
             var window = new EditStudentDetailsWindow(CurrentLoggedInStudent) { Owner = this };
             window.ShowDialog();
             LoadMemory();
-            TxtWelcomeHeadline.Text = $"Welcome Back, {CurrentLoggedInStudent.Name} [ID: {CurrentLoggedInStudent.StudentID}]";
+            CurrentLoggedInStudent = students.FirstOrDefault(s => s.StudentID == studentId);
+            TxtWelcomeHeadline.Text = CurrentLoggedInStudent == null
+                ? "Welcome"
+                : $"Welcome Back, {CurrentLoggedInStudent.Name} [ID: {CurrentLoggedInStudent.StudentID}]";
+        }
+
+        private static void RefreshCurrentStudentReference()
+        {
+            if (CurrentLoggedInStudent == null) return;
+            int studentId = CurrentLoggedInStudent.StudentID;
+            CurrentLoggedInStudent = students.FirstOrDefault(s => s.StudentID == studentId);
         }
 
         private void MenuLogout_Click(object sender, RoutedEventArgs e)
