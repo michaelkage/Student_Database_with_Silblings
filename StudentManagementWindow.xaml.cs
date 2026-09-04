@@ -15,8 +15,15 @@ public partial class StudentManagementWindow : Window
     {
         StudentComboBox.ItemsSource = null;
         StudentComboBox.ItemsSource = MainWindow.students;
+
         if (MainWindow.students.Length > 0)
+        {
             StudentComboBox.SelectedIndex = 0;
+        }
+        else
+        {
+            MessageBox.Show("No students registered.");
+        }
     }
 
     private Student? SelectedStudent => StudentComboBox.SelectedItem as Student;
