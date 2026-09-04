@@ -1,0 +1,11 @@
+<Window x:Class="StudentManagementApp.EditStudentDetailsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit My Details" Height="230" Width="500" WindowStartupLocation="CenterOwner">
+    <Grid Margin="25">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <TextBlock x:Name="PromptTextBlock" Grid.Row="0" Margin="5"/>
+        <TextBox x:Name="NameTextBox" Grid.Row="1" Margin="5"/>
+        <Button Content="Save" Grid.Row="2" Width="100" HorizontalAlignment="Right" Margin="5" Click="Save_Click"/>
+    </Grid>
+</Window>
