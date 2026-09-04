@@ -24,8 +24,6 @@ public partial class ViewStudentsWindow : Window
 
     private void LoadResults()
     {
-        MainWindow.LoadMemory();
-
         if (MainWindow.students.Length == 0)
         {
             MessageBox.Show("No students registered.");
@@ -36,8 +34,9 @@ public partial class ViewStudentsWindow : Window
         var rows = new List<ResultRow>();
         foreach (var student in MainWindow.students)
         {
+            var offeredSubjectIds = student.OfferedSubjectIDs ?? new List<int>();
             var offeredSubjects = MainWindow.subjects
-                .Where(sub => student.OfferedSubjectIDs.Contains(sub.SubjectID))
+                .Where(sub => offeredSubjectIds.Contains(sub.SubjectID))
                 .ToArray();
 
             foreach (var subject in offeredSubjects)
