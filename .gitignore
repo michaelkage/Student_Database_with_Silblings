@@ -1,0 +1,42 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio / VS Code user-specific files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# VS Code local history / workspace files
+.vscode/*.code-workspace
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Test / coverage output
+TestResults/
+coverage/
+
+# Publish output
+publish/
+
+# JetBrains Rider / ReSharper
+.idea/
+_ReSharper*/
+*.DotSettings.user
+
+# Generated documentation
+*.nupkg
