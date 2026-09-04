@@ -18,6 +18,12 @@ public partial class StudentPasswordWindow : Window
         if (password == student.StudentPassword)
         {
             string newPass = NewPasswordBox.Password;
+            if (string.IsNullOrWhiteSpace(newPass))
+            {
+                MessageBox.Show("Please enter a new password.");
+                return;
+            }
+
             student.StudentPassword = newPass;
             MainWindow.SaveMemory();
             MessageBox.Show("Success!!!");
