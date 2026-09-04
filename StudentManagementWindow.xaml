@@ -1,0 +1,16 @@
+<Window x:Class="StudentManagementApp.StudentManagementWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Student Management" Height="430" Width="520"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="30">
+        <TextBlock Text="Student Management" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+        <TextBlock Text="Select a student, then choose the same operation as the console menu." Margin="0,10,0,15"/>
+        <ComboBox x:Name="StudentComboBox" DisplayMemberPath="Name" Margin="0,0,0,20"/>
+        <Button Content="Change a Student's Score" Height="38" Margin="0,4" Click="ModifyGrade_Click"/>
+        <Button Content="Manage a Student's Offered Subjects" Height="38" Margin="0,4" Click="ManageSubjects_Click"/>
+        <Button Content="Remove a Student" Height="38" Margin="0,4" Click="RemoveStudent_Click"/>
+        <Button Content="Add a New Student" Height="38" Margin="0,4" Click="AddStudent_Click"/>
+        <Button Content="Back" Height="38" Margin="0,12,0,0" Click="Back_Click"/>
+    </StackPanel>
+</Window>
