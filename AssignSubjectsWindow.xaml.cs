@@ -131,7 +131,7 @@ public partial class AssignSubjectsWindow : Window
             Result newResult = new Result(
                 selectedStudent.StudentID,
                 subjectID,
-                null);
+                0);
 
             results.Add(newResult);
 

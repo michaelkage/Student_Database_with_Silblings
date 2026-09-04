@@ -83,7 +83,7 @@ namespace StudentManagementApp {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;component/addstudentwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;V1.0.0.0;component/addstudentwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\AddStudentWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -135,7 +135,7 @@ public partial class EditResultWindow : Window
         }
         else
         {
-            ScoreTextBox.Text = result.Score.Value.ToString();
+            ScoreTextBox.Text = result.Score.ToString();
         }
     }
 

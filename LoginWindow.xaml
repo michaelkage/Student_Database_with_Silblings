@@ -1,0 +1,64 @@
+<Window x:Class="StudentManagementApp.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StudentManagementApp"
+        mc:Ignorable="d"
+        Title="Login Portal"
+        Height="320"
+        Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F5F5F5">
+
+        <Grid Margin="20">
+                <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Database Portal Login"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,20"/>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,15">
+                                <RadioButton x:Name="RadioStudent"
+                                             Content="Student"
+                                             IsChecked="True"
+                                             Margin="0,0,20,0"
+                                             FontSize="14"/>
+                                <RadioButton x:Name="RadioAdmin"
+                                             Content="Admin"
+                                             FontSize="14"/>
+                        </StackPanel>
+
+                        <TextBlock Text="User ID / Username:"
+                                   FontSize="12"
+                                   Foreground="#666666"
+                                   Margin="0,5,0,2"/>
+                        <TextBox x:Name="TxtUserId"
+                                 Height="30"
+                                 VerticalContentAlignment="Center"
+                                 FontSize="14"/>
+
+                        <TextBlock Text="Password:"
+                                   FontSize="12"
+                                   Foreground="#666666"
+                                   Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="TxtPassword"
+                                     Height="30"
+                                     VerticalContentAlignment="Center"
+                                     FontSize="14"/>
+
+                        <Button Content="Login"
+                                Height="35"
+                                Margin="0,20,0,0"
+                                Background="#007ACC"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="14"
+                                Click="BtnLogin_Click"/>
+                </StackPanel>
+        </Grid>
+</Window>
