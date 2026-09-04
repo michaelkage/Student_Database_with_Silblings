@@ -13,7 +13,6 @@ public partial class StudentManagementWindow : Window
 
     private void LoadStudents()
     {
-        MainWindow.LoadMemory();
         StudentComboBox.ItemsSource = null;
         StudentComboBox.ItemsSource = MainWindow.students;
         if (MainWindow.students.Length > 0)
@@ -31,7 +30,6 @@ public partial class StudentManagementWindow : Window
         }
         var window = new EditResultWindow(SelectedStudent) { Owner = this };
         window.ShowDialog();
-        MainWindow.LoadMemory();
     }
 
     private void ManageSubjects_Click(object sender, RoutedEventArgs e)
@@ -43,7 +41,6 @@ public partial class StudentManagementWindow : Window
         }
         var window = new AssignSubjectsWindow(SelectedStudent) { Owner = this };
         window.ShowDialog();
-        MainWindow.LoadMemory();
     }
 
     private void RemoveStudent_Click(object sender, RoutedEventArgs e)
