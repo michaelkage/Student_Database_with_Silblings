@@ -1,0 +1,78 @@
+<Window x:Class="StudentManagementApp.EditResultWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Enter / Edit Student Result"
+        Height="300"
+        Width="450"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="25">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+
+        <!-- Student -->
+
+        <TextBlock Text="Student:"
+                   Grid.Row="0"
+                   Grid.Column="0"
+                   Margin="5"/>
+
+        <ComboBox x:Name="StudentComboBox"
+                  DisplayMemberPath="FullName"
+                  Grid.Row="0"
+                  Grid.Column="1"
+                  Margin="5"
+                  SelectionChanged="StudentComboBox_SelectionChanged"/>
+
+
+        <!-- Subject -->
+
+        <TextBlock Text="Subject:"
+                   Grid.Row="1"
+                   Grid.Column="0"
+                   Margin="5"/>
+
+        <ComboBox x:Name="SubjectComboBox"
+                  Grid.Row="1"
+                  Grid.Column="1"
+                  Margin="5"
+                  SelectionChanged="SubjectComboBox_SelectionChanged"/>
+
+
+        <!-- Score -->
+
+        <TextBlock Text="Score:"
+                   Grid.Row="2"
+                   Grid.Column="0"
+                   Margin="5"/>
+
+        <TextBox x:Name="ScoreTextBox"
+                 Grid.Row="2"
+                 Grid.Column="1"
+                 Margin="5"/>
+
+
+        <!-- Save -->
+
+        <Button Content="Save"
+                Grid.Row="3"
+                Grid.Column="1"
+                Width="100"
+                HorizontalAlignment="Right"
+                Margin="5"
+                Click="SaveButton_Click"/>
+
+    </Grid>
+
+</Window>

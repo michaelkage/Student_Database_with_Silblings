@@ -1,0 +1,68 @@
+<Window x:Class="StudentManagementApp.AssignSubjectsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Assign Subjects"
+        Height="500"
+        Width="500"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="25">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Text="Assign Subjects"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+        <!-- Student selection -->
+        <Grid Grid.Row="1"
+              Margin="0,0,0,15">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Student:"
+                       VerticalAlignment="Center"
+                       Margin="5"/>
+
+            <ComboBox x:Name="StudentComboBox"
+                      Grid.Column="1"
+                      Margin="5"/>
+
+        </Grid>
+
+        <!-- Subject list -->
+        <GroupBox Grid.Row="2"
+                  Header="Subjects"
+                  Margin="5">
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                <StackPanel x:Name="SubjectsPanel"
+                            Margin="10"/>
+
+            </ScrollViewer>
+
+        </GroupBox>
+
+        <!-- Save button -->
+        <Button Content="Save"
+                Grid.Row="3"
+                Width="100"
+                HorizontalAlignment="Right"
+                Margin="5"
+                Click="SaveButton_Click"/>
+
+    </Grid>
+
+</Window>

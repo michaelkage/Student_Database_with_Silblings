@@ -1,0 +1,30 @@
+<Window x:Class="StudentManagementApp.ViewStudentsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Student Records"
+        Height="500"
+        Width="700"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="25">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Student Records"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+        <DataGrid x:Name="StudentsDataGrid"
+                  Grid.Row="1"
+                  IsReadOnly="True"
+                  AutoGenerateColumns="True"
+                  CanUserAddRows="False"/>
+
+    </Grid>
+
+</Window>
