@@ -58,6 +58,9 @@ public partial class ViewStudentsWindow : Window
             }
         }
 
+        if (rows.Count == 0)
+            MessageBox.Show("No students are currently offering any subjects.");
+
         ResultsDataGrid.ItemsSource = rows;
     }
 
