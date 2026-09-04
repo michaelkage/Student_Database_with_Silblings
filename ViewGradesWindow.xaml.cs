@@ -11,8 +11,8 @@ public partial class ViewGradesWindow : Window
     private class GradeRow
     {
         public string SubjectName { get; set; } = "";
-        public int Score { get; set; }
-        public string LetterGrade { get; set; } = "";
+        public string Score { get; set; } = "—";
+        public string LetterGrade { get; set; } = "—";
     }
 
     public ViewGradesWindow(Student student)
@@ -44,12 +44,13 @@ public partial class ViewGradesWindow : Window
         var rows = offeredSubjects.Select(subject =>
         {
             var match = studentScores.FirstOrDefault(s => s.SubjectID == subject.SubjectID);
-            int currentGrade = match != null ? match.Grade : 0;
             return new GradeRow
             {
                 SubjectName = subject.SubjectName,
-                Score = currentGrade,
-                LetterGrade = MainWindow.GetLetterGrade(currentGrade)
+                Score = match?.Grade?.ToString() ?? "—",
+                LetterGrade = match?.Grade.HasValue == true
+                    ? MainWindow.GetLetterGrade(match.Grade.Value)
+                    : "—"
             };
         }).ToList();
 
