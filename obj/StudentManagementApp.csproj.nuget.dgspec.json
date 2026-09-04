@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\StudentManagementApp\\StudentManagementApp.csproj": {}
+    "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj": {}
   },
   "projects": {
-    "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\StudentManagementApp\\StudentManagementApp.csproj": {
+    "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\StudentManagementApp\\StudentManagementApp.csproj",
+        "projectUniqueName": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj",
         "projectName": "StudentManagementApp",
-        "projectPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\StudentManagementApp\\StudentManagementApp.csproj",
+        "projectPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj",
         "packagesPath": "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\",
-        "outputPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\StudentManagementApp\\obj\\",
+        "outputPath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\TINGO SYSTEM\\AppData\\Roaming\\NuGet\\NuGet.Config"

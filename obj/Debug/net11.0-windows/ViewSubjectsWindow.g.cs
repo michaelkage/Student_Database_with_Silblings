@@ -59,7 +59,7 @@ namespace StudentManagementApp {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;V1.0.0.0;component/viewsubjectswindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;component/viewsubjectswindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\ViewSubjectsWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

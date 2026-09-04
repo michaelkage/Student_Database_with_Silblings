@@ -75,7 +75,7 @@ namespace StudentManagementApp {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;V1.0.0.0;component/editresultwindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/StudentManagementApp;component/editresultwindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\EditResultWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
