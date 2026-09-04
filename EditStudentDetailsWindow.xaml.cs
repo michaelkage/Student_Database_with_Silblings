@@ -16,7 +16,17 @@ public partial class EditStudentDetailsWindow : Window
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        string newName = NameTextBox.Text.Trim();
+        string enteredName = NameTextBox.Text;
+        string newName = enteredName.Trim();
+
+        // Preserve the console behavior: an actually blank field keeps the current name.
+        // Whitespace-only input, however, is an attempted replacement and is rejected.
+        if (enteredName.Length > 0 && string.IsNullOrWhiteSpace(enteredName))
+        {
+            MessageBox.Show("Name cannot contain only spaces.");
+            return;
+        }
+
         if (!string.IsNullOrWhiteSpace(newName))
             student.Name = newName;
 
