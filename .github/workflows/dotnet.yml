@@ -1,0 +1,32 @@
+name: .NET Core Build and Test
+
+# Trigger this workflow every time someone pushes code or creates a Pull Request
+on:
+  push:
+    branches: [ "main", "architecture-phase-1-4" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # CRITICAL: We must use a Windows environment because WPF requires it!
+    runs-on: windows-latest
+
+    steps:
+    # Step 1: Download your repository code onto the runner machine
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # Step 2: Install the .NET 10 SDK
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x' # Aligns with your targeted net10.0-windows choice
+
+    # Step 3: Restore external NuGet package dependencies
+    - name: Restore Dependencies
+      run: dotnet restore StudentManagementApp.sln
+
+    # Step 4: Build the application to ensure it compiles flawlessly
+    - name: Build Solution
+      run: dotnet build StudentManagementApp.sln --no-restore --configuration Release
