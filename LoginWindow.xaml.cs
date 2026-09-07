@@ -1,54 +1,58 @@
 using System.Windows;
 
-namespace StudentManagementApp
+namespace StudentManagementApp;
+
+public partial class LoginWindow : Window
 {
-    public partial class LoginWindow : Window
+    public LoginWindow()
     {
-        public LoginWindow()
+        InitializeComponent();
+    }
+
+    private void BtnLogin_Click(object sender, RoutedEventArgs e)
+    {
+        string username = TxtUserId.Text.Trim();
+        string password = TxtPassword.Password;
+
+        if (RadioAdmin.IsChecked == true)
         {
-            InitializeComponent();
-        }
+            string adminPassword = DataStore.LoadAdminPassword();
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            string username = TxtUserId.Text.Trim();
-            string password = TxtPassword.Password;
-
-            if (RadioAdmin.IsChecked == true)
+            if (password == adminPassword)
             {
-                MainWindow.LoadAdminPassword();
-
-                if (password == MainWindow.AdminPassword)
-                {
-                    MainWindow.CurrentLoggedInStudent = null;
-                    new MainWindow(true).Show();
-                    Close();
-                }
-                else
-                {
-                    MessageBox.Show("Wrong!!!!", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-
-                return;
-            }
-
-            if (!int.TryParse(username, out int studentId))
-            {
-                MessageBox.Show("Invalid ID format.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            Student? student = MainWindow.LoadStudent(studentId);
-            if (student != null && student.StudentPassword == password)
-            {
-                MainWindow.CurrentLoggedInStudent = student;
-                new MainWindow(false).Show();
+                MainWindow.CurrentLoggedInStudent = null;
+                new MainWindow(true).Show();
                 Close();
             }
             else
             {
-                MessageBox.Show("Invalid Student ID or password. Access denied.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Wrong!!!!", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+            adminPassword = string.Empty;
+            return;
         }
+
+        if (!int.TryParse(username, out int studentId))
+        {
+            MessageBox.Show("Invalid ID format.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        Student? student = DataStore.LoadStudent(studentId);
+        bool authenticated = student != null && student.StudentPassword == password;
+
+        if (authenticated && student != null)
+        {
+            MainWindow.CurrentLoggedInStudent = student;
+            new MainWindow(false).Show();
+            Close();
+        }
+        else
+        {
+            MessageBox.Show("Invalid Student ID or password. Access denied.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        student = null;
     }
 }
