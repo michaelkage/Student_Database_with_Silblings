@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "Va2KIf+/kfw=",
+  "dgSpecHash": "989JoeJsJqI=",
   "success": true,
   "projectFilePath": "C:\\Local Desktop\\Michael\\ㅤㅤㅤㅤCoding & Development\\RecordsDB\\studentDatabase\\Student_Database_with_Silblings\\StudentManagementApp.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\microsoft.netcore.app.ref\\10.0.10\\microsoft.netcore.app.ref.10.0.10.nupkg.sha512",
+    "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\10.0.10\\microsoft.windowsdesktop.app.ref.10.0.10.nupkg.sha512",
+    "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\10.0.10\\microsoft.aspnetcore.app.ref.10.0.10.nupkg.sha512",
+    "C:\\Users\\TINGO SYSTEM\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\10.0.10\\microsoft.netcore.app.host.win-x64.10.0.10.nupkg.sha512"
+  ],
   "logs": []
 }

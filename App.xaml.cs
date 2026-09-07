@@ -9,6 +9,7 @@ namespace StudentManagementApp
             // Launch the Login Window first on startup!
             LoginWindow loginWindow = new LoginWindow();
             loginWindow.Show();
+            
         }
     }
 }
