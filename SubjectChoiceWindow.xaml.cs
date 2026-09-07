@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
@@ -8,7 +6,7 @@ public partial class SubjectChoiceWindow : Window
 {
     public Subject? SelectedSubject { get; private set; }
 
-    private class ChoiceItem
+    private sealed class ChoiceItem
     {
         public Subject Subject { get; }
         public string DisplayName => $"ID: {Subject.SubjectID} | Name: {Subject.SubjectName}";
@@ -19,7 +17,7 @@ public partial class SubjectChoiceWindow : Window
     {
         InitializeComponent();
         HeadingTextBlock.Text = heading;
-        SubjectsListBox.ItemsSource = subjects.Select(s => new ChoiceItem(s)).ToList();
+        SubjectsListBox.ItemsSource = subjects.Select(subject => new ChoiceItem(subject)).ToList();
     }
 
     private void Select_Click(object sender, RoutedEventArgs e)
@@ -29,6 +27,7 @@ public partial class SubjectChoiceWindow : Window
             MessageBox.Show("Invalid Subject ID.");
             return;
         }
+
         SelectedSubject = item.Subject;
         DialogResult = true;
     }
@@ -36,5 +35,12 @@ public partial class SubjectChoiceWindow : Window
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        SubjectsListBox.ItemsSource = null;
+        SelectedSubject = null;
+        base.OnClosed(e);
     }
 }
