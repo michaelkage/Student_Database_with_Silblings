@@ -4,6 +4,15 @@ using System.IO;
 
 namespace StudentManagementApp;
 
+
+// 1. One Subject -> One Score (Locked down as sealed)
+public sealed class GradeRecord
+{
+    public int SubjectID { get; set; }
+    public string SubjectName { get; set; } = string.Empty;
+    public int Score { get; set; }
+}
+
 public sealed class Score
 {
     public int StudentID { get; set; }
@@ -18,20 +27,32 @@ public sealed class Score
     }
 }
 
+// 2. One Student -> Many Grade Records (Locked down as sealed)
 public sealed class Student
 {
+    // KEEP YOUR ORIGINAL PROPERTIES EXACTLY AS THEY WERE
     public int StudentID { get; set; }
-    public string StudentPassword { get; set; }
-    public string Name { get; set; }
-    public List<int> OfferedSubjectIDs { get; set; }
+    public string Name { get; set; } = string.Empty;          // Changed back from StudentName
+    public string StudentPassword { get; set; } = string.Empty;
 
-    public Student(int id, string name, string password)
+    // This allows old code using integer tracking to still work perfectly!
+    public List<int> OfferedSubjectIDs { get; set; } = new List<int>();
+
+    // ADD THE NEW ONE-TO-MANY RELATIONSHIP HERE
+    public GradeRecord[] Grades { get; set; } = Array.Empty<GradeRecord>();
+
+    // YOUR ORIGINAL CONSTRUCTOR: Add this back so lines 361 and 636 work perfectly
+    public Student(int studentId, string name, string password)
     {
-        StudentID = id;
+        StudentID = studentId;
         Name = name;
         StudentPassword = password;
         OfferedSubjectIDs = new List<int>();
+        Grades = Array.Empty<GradeRecord>();
     }
+
+    // A blank constructor just in case .NET needs it for tracking
+    public Student() { }
 }
 
 public sealed class Subject
@@ -107,34 +128,97 @@ public static class DataStore
     }
 
     public static Student? LoadStudent(int studentId)
+{
+    lock (DataLock)
     {
+        if (!File.Exists(StudentFile)) return null;
+
+        using var stream = new FileStream(StudentFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+        while (reader.ReadLine() is { } line)
+        {
+            // Assuming your format is: StudentID,Name,Password
+            var parts = line.Split(',');
+            if (parts.Length >= 3 && int.TryParse(parts[0], out int id))
+            {
+                    if (id == studentId)
+                    {
+                        // FIXED: Using the proper 3-argument constructor with the correct property mapping (.Name)
+                        var student = new Student(id, parts[1].Trim(), parts[2].Trim());
+
+                        // STITCH THE RELATIONSHIP RIGHT HERE!
+                        student.Grades = LoadStudentGrades(studentId);
+
+                        return student;
+                    }
+                }
+            }
+        return null;
+    }
+}
+
+    public static GradeRecord[] LoadStudentGrades(int studentId)
+    {
+        // Step A: Load ONLY the scores that belong to this specific student first!
+        // This utilizes your lean filtering and GroupBy logic instantly.
+        Score[] studentScores = LoadScoresForStudent(studentId);
+
+        // If the student doesn't have any grades recorded yet, exit early without touching subjects!
+        if (studentScores.Length == 0)
+        {
+            return Array.Empty<GradeRecord>();
+        }
+
         lock (DataLock)
         {
-            using FileStream databaseLock = AcquireFileLock(StudentFile);
-            if (!File.Exists(StudentFile))
-                return null;
+            if (!File.Exists(SubjectFile))
+                return Array.Empty<GradeRecord>();
 
-            using var stream = new FileStream(
-                StudentFile,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.Read,
-                4096,
-                FileOptions.SequentialScan);
-            using var reader = new StreamReader(stream, Encoding.UTF8, true);
-
-            while (reader.ReadLine() is { } line)
+            // Create a fast hash set of the subject IDs this student actually took
+            var targetedSubjectIds = new HashSet<int>();
+            foreach (var score in studentScores)
             {
-                if (TryParseStudent(line, out Student? student))
+                targetedSubjectIds.Add(score.SubjectID);
+            }
+
+            // Step B: Stream through Subject.txt and extract ONLY the matching descriptions
+            var subjectMap = new Dictionary<int, string>();
+            using (var subStream = new FileStream(SubjectFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var subReader = new StreamReader(subStream, Encoding.UTF8))
+            {
+                while (subReader.ReadLine() is { } line)
                 {
-                    if (student.StudentID == studentId)
-                        return student;
+                    if (TryParseSubject(line, out Subject? subject) && subject != null)
+                    {
+                        // LEAN FILTERING: Only load it if the student has a score for it!
+                        if (targetedSubjectIds.Contains(subject.SubjectID))
+                        {
+                            subjectMap[subject.SubjectID] = subject.SubjectName;
+                        }
+                    }
                 }
             }
 
-            return null;
+            // Step C: Combine the two transient pieces into your clean relational records
+            var finalizedGrades = new List<GradeRecord>();
+            foreach (var score in studentScores)
+            {
+                string name = subjectMap.TryGetValue(score.SubjectID, out var subName) ? subName : "Unknown Subject";
+
+                finalizedGrades.Add(new GradeRecord
+                {
+                    SubjectID = score.SubjectID,
+                    SubjectName = name,
+                    Score = score.ScoreValue // Assumes your Score model property is named ScoreValue or Score
+                });
+            }
+
+            return finalizedGrades.ToArray();
         }
+        // All temporary tracking arrays and dictionaries are discarded instantly here!
     }
+
 
     public static Student[] LoadStudents()
     {
