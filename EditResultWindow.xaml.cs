@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,6 +6,7 @@ namespace StudentManagementApp;
 public partial class EditResultWindow : Window
 {
     private Student? student;
+    private Subject[]? offeredSubjects;
 
     public EditResultWindow(Student student)
     {
@@ -19,25 +19,28 @@ public partial class EditResultWindow : Window
             return;
         }
 
-        MainWindow.LoadStudents();
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
-        this.student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
+        this.student = DataStore.LoadStudent(student.StudentID);
+        Subject[] allSubjects = DataStore.LoadSubjects();
 
         if (this.student == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            allSubjects = null!;
             Close();
             return;
         }
 
-        StudentTextBlock.Text = $"{this.student.StudentID} - {this.student.Name}";
-        SubjectComboBox.ItemsSource = MainWindow.subjects
-            .Where(subject => (this.student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>()).Contains(subject.SubjectID))
+        offeredSubjects = allSubjects
+            .Where(subject => this.student.OfferedSubjectIDs.Contains(subject.SubjectID))
             .ToArray();
+
+        StudentTextBlock.Text = $"{this.student.StudentID} - {this.student.Name}";
+        SubjectComboBox.ItemsSource = offeredSubjects;
 
         if (SubjectComboBox.Items.Count > 0)
             SubjectComboBox.SelectedIndex = 0;
+
+        allSubjects = null!;
     }
 
     private void SubjectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -45,11 +48,11 @@ public partial class EditResultWindow : Window
         if (student == null || SubjectComboBox.SelectedItem is not Subject selectedSubject)
             return;
 
-        MainWindow.LoadScores();
-        var existing = MainWindow.scores.FirstOrDefault(score =>
-            score.StudentID == student.StudentID && score.SubjectID == selectedSubject.SubjectID);
-
+        Score[] studentScores = DataStore.LoadScoresForStudent(student.StudentID);
+        Score? existing = studentScores.FirstOrDefault(score => score.SubjectID == selectedSubject.SubjectID);
         ScoreTextBox.Text = existing?.Grade?.ToString() ?? "";
+        existing = null;
+        studentScores = null!;
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -60,10 +63,8 @@ public partial class EditResultWindow : Window
             return;
         }
 
-        Student? currentStudent = MainWindow.LoadStudent(student.StudentID);
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
-
+        int studentId = student.StudentID;
+        Student? currentStudent = DataStore.LoadStudent(studentId);
         if (currentStudent == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -73,23 +74,25 @@ public partial class EditResultWindow : Window
         if (SubjectComboBox.SelectedItem is not Subject selectedSubject)
         {
             MessageBox.Show("Please select a subject the student is offering.");
+            currentStudent = null;
             return;
         }
 
-        if (!(currentStudent.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>()).Contains(selectedSubject.SubjectID))
+        if (!currentStudent.OfferedSubjectIDs.Contains(selectedSubject.SubjectID))
         {
             MessageBox.Show("Cannot enter a score: this student has not offered this subject.", "Invalid Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
+            currentStudent = null;
             return;
         }
 
         string text = ScoreTextBox.Text.Trim();
+        int subjectId = selectedSubject.SubjectID;
+
         if (string.IsNullOrWhiteSpace(text))
         {
-            MainWindow.scores = MainWindow.scores
-                .Where(score => !(score.StudentID == currentStudent.StudentID && score.SubjectID == selectedSubject.SubjectID))
-                .ToArray();
-            MainWindow.SaveScores();
+            DataStore.SaveGrade(studentId, subjectId, null);
             MessageBox.Show("Score cleared. It will now display as —.");
+            currentStudent = null;
             Close();
             return;
         }
@@ -97,21 +100,27 @@ public partial class EditResultWindow : Window
         if (!int.TryParse(text, out int grade) || grade < 0 || grade > 100)
         {
             MessageBox.Show("Invalid grade scale. Enter a whole number from 0 to 100, or leave it blank.");
+            currentStudent = null;
             return;
         }
 
-        var scoreList = MainWindow.scores.ToList();
-        var existing = scoreList.FirstOrDefault(score =>
-            score.StudentID == currentStudent.StudentID && score.SubjectID == selectedSubject.SubjectID);
+        if (!DataStore.SaveGrade(studentId, subjectId, grade))
+        {
+            MessageBox.Show("The grade could not be saved because the student/subject relationship changed.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            currentStudent = null;
+            return;
+        }
 
-        if (existing != null)
-            existing.Grade = grade;
-        else
-            scoreList.Add(new Score(currentStudent.StudentID, selectedSubject.SubjectID, grade));
-
-        MainWindow.scores = scoreList.ToArray();
-        MainWindow.SaveScores();
         MessageBox.Show("Grade updated successfully!");
+        currentStudent = null;
         Close();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        SubjectComboBox.ItemsSource = null;
+        offeredSubjects = null;
+        student = null;
+        base.OnClosed(e);
     }
 }
