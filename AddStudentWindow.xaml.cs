@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
@@ -17,7 +16,7 @@ public partial class AddStudentWindow : Window
         }
 
         StudentIDTextBox.IsReadOnly = true;
-        StudentIDTextBox.Text = MainWindow.GetNextStudentID().ToString();
+        StudentIDTextBox.Text = "Assigned on save";
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -43,15 +42,23 @@ public partial class AddStudentWindow : Window
             return;
         }
 
-        MainWindow.LoadStudents();
-        int newId = MainWindow.GetNextStudentID();
+        try
+        {
+            Student created = DataStore.CreateStudent(name, password);
+            StudentIDTextBox.Text = created.StudentID.ToString();
+            MessageBox.Show($"Student added! Student ID: {created.StudentID}");
+            created = null!;
+            Close();
+        }
+        catch (IOException ex)
+        {
+            MessageBox.Show($"The student could not be saved.\n\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 
-        MainWindow.students = MainWindow.students
-            .Append(new Student(newId, name, password))
-            .ToArray();
-
-        MainWindow.SaveStudents();
-        MessageBox.Show($"Student added! Student ID: {newId}");
-        Close();
+    protected override void OnClosed(EventArgs e)
+    {
+        StudentIDTextBox.ItemsSource = null;
+        base.OnClosed(e);
     }
 }
