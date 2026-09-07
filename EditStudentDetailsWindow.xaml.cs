@@ -32,8 +32,8 @@ public partial class EditStudentDetailsWindow : Window
             return;
         }
 
-        // Reload immediately before mutation so this window cannot overwrite newer account data.
-        Student? current = MainWindow.LoadStudent(student.StudentID);
+        int studentId = student.StudentID;
+        Student? current = DataStore.LoadStudent(studentId);
         if (current == null)
         {
             MessageBox.Show("Your student account could not be found.", "Account Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -42,19 +42,32 @@ public partial class EditStudentDetailsWindow : Window
 
         string enteredName = NameTextBox.Text;
         string newName = enteredName.Trim();
-
         if (enteredName.Length > 0 && string.IsNullOrWhiteSpace(enteredName))
         {
             MessageBox.Show("Name cannot contain only spaces.");
+            current = null;
             return;
         }
 
         if (!string.IsNullOrWhiteSpace(newName))
-            current.Name = newName;
+        {
+            if (!DataStore.ChangeStudentName(studentId, newName))
+            {
+                MessageBox.Show("Your student account could not be updated.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                current = null;
+                return;
+            }
+        }
 
-        MainWindow.SaveStudents();
-        MainWindow.CurrentLoggedInStudent = current;
+        MainWindow.CurrentLoggedInStudent = DataStore.LoadStudent(studentId);
+        current = null;
         MessageBox.Show("Student details updated successfully!");
         Close();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        student = null;
+        base.OnClosed(e);
     }
 }
