@@ -6,7 +6,7 @@ namespace StudentManagementApp;
 
 public partial class ViewGradesWindow : Window
 {
-    private readonly Student student;
+    private Student? student;
 
     private class GradeRow
     {
@@ -18,16 +18,42 @@ public partial class ViewGradesWindow : Window
     public ViewGradesWindow(Student student)
     {
         InitializeComponent();
-        this.student = student;
+
+        if (MainWindow.IsAdminSessionActive ||
+            MainWindow.CurrentLoggedInStudent?.StudentID == student.StudentID)
+        {
+            this.student = student;
+        }
+        else
+        {
+            MessageBox.Show("Students may only view their own grades.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+            return;
+        }
+
         LoadGrades();
     }
 
     private void LoadGrades()
     {
+        if (student == null) return;
+
+        MainWindow.LoadStudents();
+        MainWindow.LoadSubjects();
+        MainWindow.LoadScores();
+        student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
+
+        if (student == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
+            return;
+        }
+
         NameTextBlock.Text = $"Name: {student.Name}";
 
         var offeredSubjects = MainWindow.subjects
-            .Where(sub => student.OfferedSubjectIDs.Contains(sub.SubjectID))
+            .Where(subject => (student.OfferedSubjectIDs ?? new List<int>()).Contains(subject.SubjectID))
             .ToArray();
 
         if (offeredSubjects.Length == 0)
@@ -38,12 +64,12 @@ public partial class ViewGradesWindow : Window
         }
 
         var studentScores = MainWindow.scores
-            .Where(s => s.StudentID == student.StudentID)
+            .Where(score => score.StudentID == student.StudentID)
             .ToArray();
 
         var rows = offeredSubjects.Select(subject =>
         {
-            var match = studentScores.FirstOrDefault(s => s.SubjectID == subject.SubjectID);
+            var match = studentScores.FirstOrDefault(score => score.SubjectID == subject.SubjectID);
             return new GradeRow
             {
                 SubjectName = subject.SubjectName,

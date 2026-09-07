@@ -19,11 +19,23 @@ public partial class ViewStudentsWindow : Window
     public ViewStudentsWindow()
     {
         InitializeComponent();
+
+        if (!MainWindow.IsAdminSessionActive)
+        {
+            MessageBox.Show("All-student results are available to administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+            return;
+        }
+
         LoadResults();
     }
 
     private void LoadResults()
     {
+        MainWindow.LoadStudents();
+        MainWindow.LoadSubjects();
+        MainWindow.LoadScores();
+
         if (MainWindow.students.Length == 0)
         {
             MessageBox.Show("No students registered.");
@@ -36,13 +48,13 @@ public partial class ViewStudentsWindow : Window
         {
             var offeredSubjectIds = student.OfferedSubjectIDs ?? new List<int>();
             var offeredSubjects = MainWindow.subjects
-                .Where(sub => offeredSubjectIds.Contains(sub.SubjectID))
+                .Where(subject => offeredSubjectIds.Contains(subject.SubjectID))
                 .ToArray();
 
             foreach (var subject in offeredSubjects)
             {
-                var match = MainWindow.scores.FirstOrDefault(s =>
-                    s.StudentID == student.StudentID && s.SubjectID == subject.SubjectID);
+                var match = MainWindow.scores.FirstOrDefault(score =>
+                    score.StudentID == student.StudentID && score.SubjectID == subject.SubjectID);
 
                 rows.Add(new ResultRow
                 {

@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp
@@ -8,7 +7,6 @@ namespace StudentManagementApp
         public LoginWindow()
         {
             InitializeComponent();
-            MainWindow.LoadMemory();
         }
 
         private void BtnLogin_Click(object sender, RoutedEventArgs e)
@@ -18,11 +16,12 @@ namespace StudentManagementApp
 
             if (RadioAdmin.IsChecked == true)
             {
+                MainWindow.LoadAdminPassword();
+
                 if (password == MainWindow.AdminPassword)
                 {
                     MainWindow.CurrentLoggedInStudent = null;
-                    var main = new MainWindow(true);
-                    main.Show();
+                    new MainWindow(true).Show();
                     Close();
                 }
                 else
@@ -39,12 +38,11 @@ namespace StudentManagementApp
                 return;
             }
 
-            var student = MainWindow.students.FirstOrDefault(s => s.StudentID == studentId);
+            Student? student = MainWindow.LoadStudent(studentId);
             if (student != null && student.StudentPassword == password)
             {
                 MainWindow.CurrentLoggedInStudent = student;
-                var main = new MainWindow(false);
-                main.Show();
+                new MainWindow(false).Show();
                 Close();
             }
             else
