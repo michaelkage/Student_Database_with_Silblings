@@ -1,10 +1,11 @@
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
 
 public partial class StudentManagementWindow : Window
 {
+    private Student[]? loadedStudents;
+
     public StudentManagementWindow()
     {
         InitializeComponent();
@@ -21,11 +22,11 @@ public partial class StudentManagementWindow : Window
 
     private void LoadStudents()
     {
-        MainWindow.LoadStudents();
+        loadedStudents = DataStore.LoadStudents();
         StudentComboBox.ItemsSource = null;
-        StudentComboBox.ItemsSource = MainWindow.students;
+        StudentComboBox.ItemsSource = loadedStudents;
 
-        if (MainWindow.students.Length > 0)
+        if (loadedStudents.Length > 0)
             StudentComboBox.SelectedIndex = 0;
         else
             MessageBox.Show("No students registered.");
@@ -41,14 +42,15 @@ public partial class StudentManagementWindow : Window
             return;
         }
 
-        if (SelectedStudent == null)
+        Student? selected = SelectedStudent;
+        if (selected == null)
         {
             MessageBox.Show("Please select a student.");
             return;
         }
 
-        var window = new EditResultWindow(SelectedStudent) { Owner = this };
-        window.ShowDialog();
+        new EditResultWindow(selected) { Owner = this }.ShowDialog();
+        selected = null;
         LoadStudents();
     }
 
@@ -60,14 +62,15 @@ public partial class StudentManagementWindow : Window
             return;
         }
 
-        if (SelectedStudent == null)
+        Student? selected = SelectedStudent;
+        if (selected == null)
         {
             MessageBox.Show("Please select a student.");
             return;
         }
 
-        var window = new AssignSubjectsWindow(SelectedStudent, true) { Owner = this };
-        window.ShowDialog();
+        new AssignSubjectsWindow(selected, true) { Owner = this }.ShowDialog();
+        selected = null;
         LoadStudents();
     }
 
@@ -79,14 +82,15 @@ public partial class StudentManagementWindow : Window
             return;
         }
 
-        if (SelectedStudent == null)
+        Student? selected = SelectedStudent;
+        if (selected == null)
         {
             MessageBox.Show("Please select a student.");
             return;
         }
 
         var confirmation = MessageBox.Show(
-            $"Are you sure you want to delete {SelectedStudent.Name}?",
+            $"Are you sure you want to delete {selected.Name}?",
             "Confirm deletion",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -97,16 +101,14 @@ public partial class StudentManagementWindow : Window
             return;
         }
 
-        int id = SelectedStudent.StudentID;
-        MainWindow.LoadStudents();
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
-        MainWindow.students = MainWindow.students.Where(student => student.StudentID != id).ToArray();
-        MainWindow.scores = MainWindow.scores.Where(score => score.StudentID != id).ToArray();
-        MainWindow.SaveStudents();
-        MainWindow.SaveScores();
+        int studentId = selected.StudentID;
+        selected = null;
 
-        MessageBox.Show("Student and all associated records deleted successfully!");
+        if (DataStore.DeleteStudent(studentId))
+            MessageBox.Show("Student and all associated records deleted successfully!");
+        else
+            MessageBox.Show("Student account could not be found.", "Deletion Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+
         LoadStudents();
     }
 
@@ -118,10 +120,16 @@ public partial class StudentManagementWindow : Window
             return;
         }
 
-        var window = new AddStudentWindow { Owner = this };
-        window.ShowDialog();
+        new AddStudentWindow { Owner = this }.ShowDialog();
         LoadStudents();
     }
 
     private void Back_Click(object sender, RoutedEventArgs e) => Close();
+
+    protected override void OnClosed(EventArgs e)
+    {
+        StudentComboBox.ItemsSource = null;
+        loadedStudents = null;
+        base.OnClosed(e);
+    }
 }
