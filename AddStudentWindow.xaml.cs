@@ -55,10 +55,4 @@ public partial class AddStudentWindow : Window
             MessageBox.Show($"The student could not be saved.\n\n{ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
-
-    protected override void OnClosed(EventArgs e)
-    {
-        StudentIDTextBox.ItemsSource = null;
-        base.OnClosed(e);
-    }
 }
