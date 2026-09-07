@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
@@ -28,10 +27,7 @@ public partial class AssignSubjectsWindow : Window
             return;
         }
 
-        MainWindow.LoadStudents();
-        MainWindow.LoadSubjects();
-        this.student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
-
+        this.student = DataStore.LoadStudent(student.StudentID);
         if (this.student == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -44,46 +40,81 @@ public partial class AssignSubjectsWindow : Window
 
     private void Offer_Click(object sender, RoutedEventArgs e)
     {
-        if (student == null) return;
-        MainWindow.LoadSubjects();
+        if (!HasValidSession() || student == null)
+            return;
 
-        var offeredIds = student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>();
-        var available = MainWindow.subjects
-            .Where(s => !offeredIds.Contains(s.SubjectID))
+        int studentId = student.StudentID;
+        Student? current = DataStore.LoadStudent(studentId);
+        Subject[] availableSubjects = DataStore.LoadSubjects();
+
+        if (current == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            availableSubjects = null!;
+            return;
+        }
+
+        List<int> offeredIds = current.OfferedSubjectIDs ?? new List<int>();
+        Subject[] available = availableSubjects
+            .Where(subject => !offeredIds.Contains(subject.SubjectID))
             .ToArray();
 
         if (available.Length == 0)
         {
             MessageBox.Show("No new subjects available to offer.");
+            current = null;
+            availableSubjects = null!;
+            available = null!;
             return;
         }
 
         var window = new SubjectChoiceWindow("Available subjects to offer", available) { Owner = this };
         if (window.ShowDialog() == true && window.SelectedSubject != null)
         {
-            offeredIds.Add(window.SelectedSubject.SubjectID);
-            student.OfferedSubjectIDs = offeredIds;
-            MainWindow.SaveStudents();
-            MessageBox.Show("Subject added to offerings successfully!");
+            int subjectId = window.SelectedSubject.SubjectID;
+            offeredIds.Add(subjectId);
+            if (DataStore.UpdateStudentSubjects(studentId, offeredIds))
+                MessageBox.Show("Subject added to offerings successfully!");
         }
+
+        window.SelectedSubject = null;
+        window = null!;
+        current = null;
+        availableSubjects = null!;
+        available = null!;
     }
 
     private void Drop_Click(object sender, RoutedEventArgs e)
     {
-        if (student == null) return;
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
+        if (!HasValidSession() || student == null)
+            return;
 
-        var offeredIds = student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>();
-        if (offeredIds.Count == 0)
+        int studentId = student.StudentID;
+        Student? current = DataStore.LoadStudent(studentId);
+        Subject[] allSubjects = DataStore.LoadSubjects();
+        Score[] studentScores = DataStore.LoadScoresForStudent(studentId);
+
+        if (current == null)
         {
-            MessageBox.Show("This student isn't offering any subjects to drop.");
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            allSubjects = null!;
+            studentScores = null!;
             return;
         }
 
-        var offered = offeredIds
-            .Select(id => MainWindow.subjects.FirstOrDefault(s => s.SubjectID == id))
-            .Where(s => s != null)
+        List<int> offeredIds = current.OfferedSubjectIDs ?? new List<int>();
+        if (offeredIds.Count == 0)
+        {
+            MessageBox.Show("This student isn't offering any subjects to drop.");
+            current = null;
+            allSubjects = null!;
+            studentScores = null!;
+            return;
+        }
+
+        Subject[] offered = offeredIds
+            .Select(id => allSubjects.FirstOrDefault(subject => subject.SubjectID == id))
+            .Where(subject => subject != null)
             .Cast<Subject>()
             .ToArray();
 
@@ -92,17 +123,42 @@ public partial class AssignSubjectsWindow : Window
         {
             int subjectId = window.SelectedSubject.SubjectID;
             offeredIds.Remove(subjectId);
-            student.OfferedSubjectIDs = offeredIds;
 
-            MainWindow.scores = MainWindow.scores
-                .Where(s => !(s.StudentID == student.StudentID && s.SubjectID == subjectId))
-                .ToArray();
-
-            MainWindow.SaveStudents();
-            MainWindow.SaveScores();
-            MessageBox.Show("Subject dropped successfully!");
+            if (DataStore.UpdateStudentSubjects(studentId, offeredIds))
+            {
+                DataStore.SaveGrade(studentId, subjectId, null);
+                MessageBox.Show("Subject dropped successfully!");
+            }
         }
+
+        window.SelectedSubject = null;
+        window = null!;
+        current = null;
+        allSubjects = null!;
+        studentScores = null!;
+        offered = null!;
+    }
+
+    private bool HasValidSession()
+    {
+        if (MainWindow.IsAdminSessionActive)
+            return true;
+
+        if (student == null || MainWindow.CurrentLoggedInStudent == null ||
+            MainWindow.CurrentLoggedInStudent.StudentID != student.StudentID)
+        {
+            MessageBox.Show("Students may only manage their own offered subjects.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
+        return true;
     }
 
     private void Back_Click(object sender, RoutedEventArgs e) => Close();
+
+    protected override void OnClosed(EventArgs e)
+    {
+        student = null;
+        base.OnClosed(e);
+    }
 }
