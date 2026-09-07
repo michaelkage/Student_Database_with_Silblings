@@ -4,24 +4,42 @@ namespace StudentManagementApp;
 
 public partial class ChangeAdminPasswordWindow : Window
 {
-    public ChangeAdminPasswordWindow() => InitializeComponent();
+    public ChangeAdminPasswordWindow()
+    {
+        InitializeComponent();
+
+        if (!MainWindow.IsAdminSessionActive)
+        {
+            MessageBox.Show("Administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+        }
+    }
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (CurrentPasswordBox.Password == MainWindow.AdminPassword)
+        if (!MainWindow.IsAdminSessionActive)
         {
-            string newPass = NewPasswordBox.Password;
-            if (!string.IsNullOrWhiteSpace(newPass))
-            {
-                MainWindow.AdminPassword = newPass;
-                MainWindow.SaveMemory();
-                MessageBox.Show("Password saved permanently!");
-                Close();
-            }
+            MessageBox.Show("Administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
         }
-        else
+
+        MainWindow.LoadAdminPassword();
+
+        if (CurrentPasswordBox.Password != MainWindow.AdminPassword)
         {
             MessageBox.Show("Access Denied.");
+            return;
         }
+
+        string newPass = NewPasswordBox.Password;
+        if (string.IsNullOrWhiteSpace(newPass))
+        {
+            MessageBox.Show("Please enter a new password.");
+            return;
+        }
+
+        MainWindow.SetAdminPassword(newPass);
+        MessageBox.Show("Password saved permanently!");
+        Close();
     }
 }
