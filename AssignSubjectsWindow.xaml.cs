@@ -5,19 +5,51 @@ namespace StudentManagementApp;
 
 public partial class AssignSubjectsWindow : Window
 {
-    private readonly Student student;
+    private Student? student;
 
-    public AssignSubjectsWindow(Student student)
+    public AssignSubjectsWindow(Student student, bool adminMode = false)
     {
         InitializeComponent();
-        this.student = student;
-        TitleTextBlock.Text = $"Managing Subjects for {student.Name}";
+
+        if (MainWindow.IsAdminSessionActive)
+        {
+            if (!adminMode)
+            {
+                MessageBox.Show("This window must be opened through the administrator session.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Close();
+                return;
+            }
+        }
+        else if (MainWindow.CurrentLoggedInStudent == null ||
+                 MainWindow.CurrentLoggedInStudent.StudentID != student.StudentID)
+        {
+            MessageBox.Show("Students may only manage their own offered subjects.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+            return;
+        }
+
+        MainWindow.LoadStudents();
+        MainWindow.LoadSubjects();
+        this.student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
+
+        if (this.student == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
+            return;
+        }
+
+        TitleTextBlock.Text = $"Managing Subjects for {this.student.Name}";
     }
 
     private void Offer_Click(object sender, RoutedEventArgs e)
     {
+        if (student == null) return;
+        MainWindow.LoadSubjects();
+
+        var offeredIds = student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>();
         var available = MainWindow.subjects
-            .Where(s => !student.OfferedSubjectIDs.Contains(s.SubjectID))
+            .Where(s => !offeredIds.Contains(s.SubjectID))
             .ToArray();
 
         if (available.Length == 0)
@@ -29,21 +61,27 @@ public partial class AssignSubjectsWindow : Window
         var window = new SubjectChoiceWindow("Available subjects to offer", available) { Owner = this };
         if (window.ShowDialog() == true && window.SelectedSubject != null)
         {
-            student.OfferedSubjectIDs.Add(window.SelectedSubject.SubjectID);
-            MainWindow.SaveMemory();
+            offeredIds.Add(window.SelectedSubject.SubjectID);
+            student.OfferedSubjectIDs = offeredIds;
+            MainWindow.SaveStudents();
             MessageBox.Show("Subject added to offerings successfully!");
         }
     }
 
     private void Drop_Click(object sender, RoutedEventArgs e)
     {
-        if (student.OfferedSubjectIDs.Count == 0)
+        if (student == null) return;
+        MainWindow.LoadSubjects();
+        MainWindow.LoadScores();
+
+        var offeredIds = student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>();
+        if (offeredIds.Count == 0)
         {
             MessageBox.Show("This student isn't offering any subjects to drop.");
             return;
         }
 
-        var offered = student.OfferedSubjectIDs
+        var offered = offeredIds
             .Select(id => MainWindow.subjects.FirstOrDefault(s => s.SubjectID == id))
             .Where(s => s != null)
             .Cast<Subject>()
@@ -53,11 +91,15 @@ public partial class AssignSubjectsWindow : Window
         if (window.ShowDialog() == true && window.SelectedSubject != null)
         {
             int subjectId = window.SelectedSubject.SubjectID;
-            student.OfferedSubjectIDs.Remove(subjectId);
+            offeredIds.Remove(subjectId);
+            student.OfferedSubjectIDs = offeredIds;
+
             MainWindow.scores = MainWindow.scores
                 .Where(s => !(s.StudentID == student.StudentID && s.SubjectID == subjectId))
                 .ToArray();
-            MainWindow.SaveMemory();
+
+            MainWindow.SaveStudents();
+            MainWindow.SaveScores();
             MessageBox.Show("Subject dropped successfully!");
         }
     }
