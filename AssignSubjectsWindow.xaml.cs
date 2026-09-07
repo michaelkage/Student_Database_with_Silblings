@@ -45,17 +45,17 @@ public partial class AssignSubjectsWindow : Window
 
         int studentId = student.StudentID;
         Student? current = DataStore.LoadStudent(studentId);
-        Subject[] availableSubjects = DataStore.LoadSubjects();
+        Subject[] allSubjects = DataStore.LoadSubjects();
 
         if (current == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            availableSubjects = null!;
+            allSubjects = null!;
             return;
         }
 
         List<int> offeredIds = current.OfferedSubjectIDs ?? new List<int>();
-        Subject[] available = availableSubjects
+        Subject[] available = allSubjects
             .Where(subject => !offeredIds.Contains(subject.SubjectID))
             .ToArray();
 
@@ -63,7 +63,7 @@ public partial class AssignSubjectsWindow : Window
         {
             MessageBox.Show("No new subjects available to offer.");
             current = null;
-            availableSubjects = null!;
+            allSubjects = null!;
             available = null!;
             return;
         }
@@ -77,10 +77,9 @@ public partial class AssignSubjectsWindow : Window
                 MessageBox.Show("Subject added to offerings successfully!");
         }
 
-        window.SelectedSubject = null;
         window = null!;
         current = null;
-        availableSubjects = null!;
+        allSubjects = null!;
         available = null!;
     }
 
@@ -92,13 +91,11 @@ public partial class AssignSubjectsWindow : Window
         int studentId = student.StudentID;
         Student? current = DataStore.LoadStudent(studentId);
         Subject[] allSubjects = DataStore.LoadSubjects();
-        Score[] studentScores = DataStore.LoadScoresForStudent(studentId);
 
         if (current == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             allSubjects = null!;
-            studentScores = null!;
             return;
         }
 
@@ -108,7 +105,6 @@ public partial class AssignSubjectsWindow : Window
             MessageBox.Show("This student isn't offering any subjects to drop.");
             current = null;
             allSubjects = null!;
-            studentScores = null!;
             return;
         }
 
@@ -124,18 +120,16 @@ public partial class AssignSubjectsWindow : Window
             int subjectId = window.SelectedSubject.SubjectID;
             offeredIds.Remove(subjectId);
 
+            // Remove the score while the subject is still offered, because SaveGrade validates
+            // the relationship. Then persist the new offered-subject list.
+            DataStore.SaveGrade(studentId, subjectId, null);
             if (DataStore.UpdateStudentSubjects(studentId, offeredIds))
-            {
-                DataStore.SaveGrade(studentId, subjectId, null);
                 MessageBox.Show("Subject dropped successfully!");
-            }
         }
 
-        window.SelectedSubject = null;
         window = null!;
         current = null;
         allSubjects = null!;
-        studentScores = null!;
         offered = null!;
     }
 
