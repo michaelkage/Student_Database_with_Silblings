@@ -23,10 +23,10 @@ public partial class ChangeAdminPasswordWindow : Window
             return;
         }
 
-        MainWindow.LoadAdminPassword();
-
-        if (CurrentPasswordBox.Password != MainWindow.AdminPassword)
+        string currentPassword = DataStore.LoadAdminPassword();
+        if (CurrentPasswordBox.Password != currentPassword)
         {
+            currentPassword = string.Empty;
             MessageBox.Show("Access Denied.");
             return;
         }
@@ -34,11 +34,20 @@ public partial class ChangeAdminPasswordWindow : Window
         string newPass = NewPasswordBox.Password;
         if (string.IsNullOrWhiteSpace(newPass))
         {
+            currentPassword = string.Empty;
             MessageBox.Show("Please enter a new password.");
             return;
         }
 
-        MainWindow.SetAdminPassword(newPass);
+        if (!DataStore.ChangeAdminPassword(newPass, currentPassword))
+        {
+            currentPassword = string.Empty;
+            MessageBox.Show("The password could not be updated.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        currentPassword = string.Empty;
+        MainWindow.LoadAdminPassword();
         MessageBox.Show("Password saved permanently!");
         Close();
     }
