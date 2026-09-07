@@ -28,8 +28,8 @@ public partial class StudentPasswordWindow : Window
             return;
         }
 
-        // Re-read the account immediately before authentication.
-        Student? current = MainWindow.LoadStudent(student.StudentID);
+        int studentId = student.StudentID;
+        Student? current = DataStore.LoadStudent(studentId);
         if (current == null)
         {
             MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -39,6 +39,7 @@ public partial class StudentPasswordWindow : Window
         if (CurrentPasswordBox.Password != current.StudentPassword)
         {
             MessageBox.Show("Fail :(");
+            current = null;
             return;
         }
 
@@ -46,13 +47,26 @@ public partial class StudentPasswordWindow : Window
         if (string.IsNullOrWhiteSpace(newPass))
         {
             MessageBox.Show("Please enter a new password.");
+            current = null;
             return;
         }
 
-        current.StudentPassword = newPass;
-        MainWindow.SaveStudents();
-        MainWindow.CurrentLoggedInStudent = current;
+        if (!DataStore.ChangeStudentPassword(studentId, newPass))
+        {
+            MessageBox.Show("The student account could not be updated.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            current = null;
+            return;
+        }
+
+        MainWindow.CurrentLoggedInStudent = DataStore.LoadStudent(studentId);
+        current = null;
         MessageBox.Show("Success!!!");
         Close();
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        student = null;
+        base.OnClosed(e);
     }
 }
