@@ -17,38 +17,31 @@ public partial class ChangeAdminPasswordWindow : Window
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
+        // 1. Session verification check
         if (!MainWindow.IsAdminSessionActive)
         {
             MessageBox.Show("Administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        string currentPassword = DataStore.LoadAdminPassword();
-        if (CurrentPasswordBox.Password != currentPassword)
+        string currentPassInput = CurrentPasswordBox.Password;
+        string newPassInput = NewPasswordBox.Password;
+
+        // 2. Structural data checks
+        if (string.IsNullOrWhiteSpace(newPassInput))
         {
-            currentPassword = string.Empty;
-            MessageBox.Show("Access Denied.");
+            MessageBox.Show("Please enter a new password.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        string newPass = NewPasswordBox.Password;
-        if (string.IsNullOrWhiteSpace(newPass))
+        // 3. Send both to the engine. It verifies the old password AND saves the new one in one single transaction!
+        if (!DataStore.ChangeAdminPassword(newPassInput, currentPassInput))
         {
-            currentPassword = string.Empty;
-            MessageBox.Show("Please enter a new password.");
+            MessageBox.Show("Access Denied or password could not be updated. Please verify your current password.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        if (!DataStore.ChangeAdminPassword(newPass, currentPassword))
-        {
-            currentPassword = string.Empty;
-            MessageBox.Show("The password could not be updated.", "Save Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        currentPassword = string.Empty;
-        MainWindow.LoadAdminPassword();
-        MessageBox.Show("Password saved permanently!");
+        MessageBox.Show("Password saved permanently!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         Close();
     }
 }

@@ -3,8 +3,7 @@ using System.Windows;
 namespace StudentManagementApp;
 
 public partial class MainWindow : Window
-{
-    public static string AdminPassword { get; private set; } = "Messi";
+{    
     public static Student? CurrentLoggedInStudent { get; set; }
     public static bool IsAdminSessionActive { get; private set; }
     public bool isAdminSession { get; }
@@ -24,11 +23,6 @@ public partial class MainWindow : Window
         if (numericGrade >= 60) return "C";
         if (numericGrade >= 50) return "P";
         return "F";
-    }
-
-    public static void LoadAdminPassword()
-    {
-        AdminPassword = DataStore.LoadAdminPassword();
     }
 
     private void UnlockDashboard(bool isAdmin)

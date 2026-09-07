@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.IO; 
 
 namespace StudentManagementApp;
 
@@ -65,26 +66,46 @@ public static class DataStore
     // also prevent a second application instance from entering the same transaction.
     private static readonly object DataLock = new();
 
-    public static string LoadAdminPassword()
-    {
-        lock (DataLock)
-        {
-            using FileStream databaseLock = AcquireFileLock(PasswordFile);
-            if (!File.Exists(PasswordFile))
-                return "Messi";
+    public static bool VerifyAdminPassword(string inputPassword)
+{
+    // If the user didn't type anything, don't even open the file
+    if (string.IsNullOrEmpty(inputPassword)) 
+        return false;
 
-            using var stream = new FileStream(
-                PasswordFile,
-                FileMode.Open,
-                FileAccess.Read,
-                FileShare.Read,
-                4096,
-                FileOptions.SequentialScan);
-            using var reader = new StreamReader(stream, Encoding.UTF8, true);
-            string value = reader.ReadToEnd().Trim();
-            return string.IsNullOrEmpty(value) ? "Messi" : value;
+    lock (DataLock)
+    {
+        // 1. Acquire the safe file system lock
+        using FileStream databaseLock = AcquireFileLock(PasswordFile);
+        
+        // 2. If the file is missing, fallback safely to default "Messi"
+        if (!File.Exists(PasswordFile))
+        {
+            return inputPassword == "Messi";
         }
+
+        // 3. Open a transient reader stream
+        using var stream = new FileStream(
+            PasswordFile,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            4096,
+            FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream, Encoding.UTF8, true);
+        
+        string actualPassword = reader.ReadToEnd().Trim();
+
+        // 4. Handle blank file fallback case safely
+        if (string.IsNullOrEmpty(actualPassword))
+        {
+            return inputPassword == "Messi";
+        }
+
+        // 5. Compare the input directly and return the boolean true/false
+        return inputPassword == actualPassword;
     }
+    // All password strings inside this method are discarded right here!
+}
 
     public static Student? LoadStudent(int studentId)
     {

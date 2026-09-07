@@ -14,11 +14,11 @@ public partial class LoginWindow : Window
         string username = TxtUserId.Text.Trim();
         string password = TxtPassword.Password;
 
+        // --- ADMIN LOGIN PATH ---
         if (RadioAdmin.IsChecked == true)
         {
-            string adminPassword = DataStore.LoadAdminPassword();
-
-            if (password == adminPassword)
+            // Direct boolean verification: The true admin password never enters UI RAM!
+            if (DataStore.VerifyAdminPassword(password))
             {
                 MainWindow.CurrentLoggedInStudent = null;
                 new MainWindow(true).Show();
@@ -29,16 +29,17 @@ public partial class LoginWindow : Window
                 MessageBox.Show("Wrong!!!!", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            adminPassword = string.Empty;
             return;
         }
 
+        // --- STUDENT LOGIN PATH ---
         if (!int.TryParse(username, out int studentId))
         {
             MessageBox.Show("Invalid ID format.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
+        // Transient student record check
         Student? student = DataStore.LoadStudent(studentId);
         bool authenticated = student != null && student.StudentPassword == password;
 
@@ -53,6 +54,7 @@ public partial class LoginWindow : Window
             MessageBox.Show("Invalid Student ID or password. Access denied.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
+        // Immediate cleanup of the transient object reference for the Garbage Collector
         student = null;
     }
 }
