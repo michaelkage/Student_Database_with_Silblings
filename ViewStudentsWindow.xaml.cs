@@ -1,12 +1,14 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
 
 public partial class ViewStudentsWindow : Window
 {
-    private class ResultRow
+    private Student[]? students;
+    private Subject[]? subjects;
+    private Score[]? scores;
+
+    private sealed class ResultRow
     {
         public int StudentID { get; set; }
         public string Name { get; set; } = "";
@@ -32,11 +34,11 @@ public partial class ViewStudentsWindow : Window
 
     private void LoadResults()
     {
-        MainWindow.LoadStudents();
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
+        students = DataStore.LoadStudents();
+        subjects = DataStore.LoadSubjects();
+        scores = DataStore.LoadAllScores();
 
-        if (MainWindow.students.Length == 0)
+        if (students.Length == 0)
         {
             MessageBox.Show("No students registered.");
             ResultsDataGrid.ItemsSource = new List<ResultRow>();
@@ -44,16 +46,12 @@ public partial class ViewStudentsWindow : Window
         }
 
         var rows = new List<ResultRow>();
-        foreach (var student in MainWindow.students)
+        foreach (Student student in students)
         {
-            var offeredSubjectIds = student.OfferedSubjectIDs ?? new List<int>();
-            var offeredSubjects = MainWindow.subjects
-                .Where(subject => offeredSubjectIds.Contains(subject.SubjectID))
-                .ToArray();
-
-            foreach (var subject in offeredSubjects)
+            List<int> offeredSubjectIds = student.OfferedSubjectIDs ?? new List<int>();
+            foreach (Subject subject in subjects.Where(subject => offeredSubjectIds.Contains(subject.SubjectID)))
             {
-                var match = MainWindow.scores.FirstOrDefault(score =>
+                Score? match = scores.FirstOrDefault(score =>
                     score.StudentID == student.StudentID && score.SubjectID == subject.SubjectID);
 
                 rows.Add(new ResultRow
@@ -67,6 +65,7 @@ public partial class ViewStudentsWindow : Window
                         ? MainWindow.GetLetterGrade(match.Grade.Value)
                         : "—"
                 });
+                match = null;
             }
         }
 
@@ -74,7 +73,17 @@ public partial class ViewStudentsWindow : Window
             MessageBox.Show("No students are currently offering any subjects.");
 
         ResultsDataGrid.ItemsSource = rows;
+        rows = null!;
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e) => Close();
+
+    protected override void OnClosed(EventArgs e)
+    {
+        ResultsDataGrid.ItemsSource = null;
+        students = null;
+        subjects = null;
+        scores = null;
+        base.OnClosed(e);
+    }
 }

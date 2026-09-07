@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 
 namespace StudentManagementApp;
@@ -7,8 +5,10 @@ namespace StudentManagementApp;
 public partial class ViewGradesWindow : Window
 {
     private Student? student;
+    private Subject[]? subjects;
+    private Score[]? scores;
 
-    private class GradeRow
+    private sealed class GradeRow
     {
         public string SubjectName { get; set; } = "";
         public string Score { get; set; } = "—";
@@ -22,11 +22,18 @@ public partial class ViewGradesWindow : Window
         if (MainWindow.IsAdminSessionActive ||
             MainWindow.CurrentLoggedInStudent?.StudentID == student.StudentID)
         {
-            this.student = student;
+            this.student = DataStore.LoadStudent(student.StudentID);
         }
         else
         {
             MessageBox.Show("Students may only view their own grades.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+            return;
+        }
+
+        if (this.student == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Close();
             return;
         }
@@ -38,50 +45,53 @@ public partial class ViewGradesWindow : Window
     {
         if (student == null) return;
 
-        MainWindow.LoadStudents();
-        MainWindow.LoadSubjects();
-        MainWindow.LoadScores();
-        student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
-
-        if (student == null)
-        {
-            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Close();
-            return;
-        }
+        int studentId = student.StudentID;
+        subjects = DataStore.LoadSubjects();
+        scores = DataStore.LoadScoresForStudent(studentId);
 
         NameTextBlock.Text = $"Name: {student.Name}";
 
-        var offeredSubjects = MainWindow.subjects
-            .Where(subject => (student.OfferedSubjectIDs ?? new List<int>()).Contains(subject.SubjectID))
+        List<int> offeredIds = student.OfferedSubjectIDs ?? new List<int>();
+        Subject[] offeredSubjects = subjects
+            .Where(subject => offeredIds.Contains(subject.SubjectID))
             .ToArray();
 
         if (offeredSubjects.Length == 0)
         {
             MessageBox.Show("You are not offering any subjects currently.");
             GradesGrid.ItemsSource = new List<GradeRow>();
+            offeredSubjects = null!;
             return;
         }
 
-        var studentScores = MainWindow.scores
-            .Where(score => score.StudentID == student.StudentID)
-            .ToArray();
-
-        var rows = offeredSubjects.Select(subject =>
+        var rows = new List<GradeRow>(offeredSubjects.Length);
+        foreach (Subject subject in offeredSubjects)
         {
-            var match = studentScores.FirstOrDefault(score => score.SubjectID == subject.SubjectID);
-            return new GradeRow
+            Score? match = scores.FirstOrDefault(score => score.SubjectID == subject.SubjectID);
+            rows.Add(new GradeRow
             {
                 SubjectName = subject.SubjectName,
                 Score = match?.Grade?.ToString() ?? "—",
                 LetterGrade = match?.Grade.HasValue == true
                     ? MainWindow.GetLetterGrade(match.Grade.Value)
                     : "—"
-            };
-        }).ToList();
+            });
+            match = null;
+        }
 
         GradesGrid.ItemsSource = rows;
+        offeredSubjects = null!;
+        rows = null!;
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    protected override void OnClosed(EventArgs e)
+    {
+        GradesGrid.ItemsSource = null;
+        scores = null;
+        subjects = null;
+        student = null;
+        base.OnClosed(e);
+    }
 }
