@@ -99,6 +99,7 @@ public partial class StudentManagementWindow : Window
 
         int id = SelectedStudent.StudentID;
         MainWindow.LoadStudents();
+        MainWindow.LoadSubjects();
         MainWindow.LoadScores();
         MainWindow.students = MainWindow.students.Where(student => student.StudentID != id).ToArray();
         MainWindow.scores = MainWindow.scores.Where(score => score.StudentID != id).ToArray();
