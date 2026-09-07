@@ -6,17 +6,34 @@ namespace StudentManagementApp;
 
 public partial class EditResultWindow : Window
 {
-    private readonly Student student;
+    private Student? student;
 
     public EditResultWindow(Student student)
     {
         InitializeComponent();
-        this.student = student;
-        StudentTextBlock.Text = $"{student.StudentID} - {student.Name}";
 
-        // Only subjects actually offered by this student can receive a score.
+        if (!MainWindow.IsAdminSessionActive)
+        {
+            MessageBox.Show("Grade editing is available to administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Close();
+            return;
+        }
+
+        MainWindow.LoadStudents();
+        MainWindow.LoadSubjects();
+        MainWindow.LoadScores();
+        this.student = MainWindow.students.FirstOrDefault(s => s.StudentID == student.StudentID);
+
+        if (this.student == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
+            return;
+        }
+
+        StudentTextBlock.Text = $"{this.student.StudentID} - {this.student.Name}";
         SubjectComboBox.ItemsSource = MainWindow.subjects
-            .Where(s => student.OfferedSubjectIDs.Contains(s.SubjectID))
+            .Where(subject => (this.student.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>()).Contains(subject.SubjectID))
             .ToArray();
 
         if (SubjectComboBox.Items.Count > 0)
@@ -25,25 +42,41 @@ public partial class EditResultWindow : Window
 
     private void SubjectComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (SubjectComboBox.SelectedItem is not Subject selectedSubject)
+        if (student == null || SubjectComboBox.SelectedItem is not Subject selectedSubject)
             return;
 
-        var existing = MainWindow.scores.FirstOrDefault(s =>
-            s.StudentID == student.StudentID && s.SubjectID == selectedSubject.SubjectID);
+        MainWindow.LoadScores();
+        var existing = MainWindow.scores.FirstOrDefault(score =>
+            score.StudentID == student.StudentID && score.SubjectID == selectedSubject.SubjectID);
 
         ScoreTextBox.Text = existing?.Grade?.ToString() ?? "";
     }
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!MainWindow.IsAdminSessionActive || student == null)
+        {
+            MessageBox.Show("Administrators only.", "Access Denied", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        Student? currentStudent = MainWindow.LoadStudent(student.StudentID);
+        MainWindow.LoadSubjects();
+        MainWindow.LoadScores();
+
+        if (currentStudent == null)
+        {
+            MessageBox.Show("Student account not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
         if (SubjectComboBox.SelectedItem is not Subject selectedSubject)
         {
             MessageBox.Show("Please select a subject the student is offering.");
             return;
         }
 
-        // This is enforced here as well as by the UI so an invalid Score can never be created.
-        if (!student.OfferedSubjectIDs.Contains(selectedSubject.SubjectID))
+        if (!(currentStudent.OfferedSubjectIDs ?? new System.Collections.Generic.List<int>()).Contains(selectedSubject.SubjectID))
         {
             MessageBox.Show("Cannot enter a score: this student has not offered this subject.", "Invalid Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
@@ -52,11 +85,10 @@ public partial class EditResultWindow : Window
         string text = ScoreTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(text))
         {
-            // Blank means no score has been entered. Remove any existing score record.
             MainWindow.scores = MainWindow.scores
-                .Where(s => !(s.StudentID == student.StudentID && s.SubjectID == selectedSubject.SubjectID))
+                .Where(score => !(score.StudentID == currentStudent.StudentID && score.SubjectID == selectedSubject.SubjectID))
                 .ToArray();
-            MainWindow.SaveMemory();
+            MainWindow.SaveScores();
             MessageBox.Show("Score cleared. It will now display as —.");
             Close();
             return;
@@ -69,16 +101,16 @@ public partial class EditResultWindow : Window
         }
 
         var scoreList = MainWindow.scores.ToList();
-        var existing = scoreList.FirstOrDefault(s =>
-            s.StudentID == student.StudentID && s.SubjectID == selectedSubject.SubjectID);
+        var existing = scoreList.FirstOrDefault(score =>
+            score.StudentID == currentStudent.StudentID && score.SubjectID == selectedSubject.SubjectID);
 
         if (existing != null)
             existing.Grade = grade;
         else
-            scoreList.Add(new Score(student.StudentID, selectedSubject.SubjectID, grade));
+            scoreList.Add(new Score(currentStudent.StudentID, selectedSubject.SubjectID, grade));
 
         MainWindow.scores = scoreList.ToArray();
-        MainWindow.SaveMemory();
+        MainWindow.SaveScores();
         MessageBox.Show("Grade updated successfully!");
         Close();
     }
